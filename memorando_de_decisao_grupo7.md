@@ -5,7 +5,7 @@
 | Link do GIT: https://github.com/GzTop1/Redes-Projeto.git |
 | Curso / Disciplina | Estrutura de Dados II |
 | Projeto integrador | `\[\]` |
-| Orientador(a) | `\[\]` |
+| Orientador(a) | `Andrea Ono Sakai` |
 | Data de entrega desta etapa | 08/09 |
 | Integrantes do grupo | Isaac william, Geziel de Andrade, Fernanda Akemi Martins Sanpei, Hendrick Ambriola, Davi Gabriel Borges dos Santos |
 
@@ -49,33 +49,52 @@ Conforme a documentação oficial da RIPE NCC, a API do RIPE Atlas possibilita a
 
 ## 4. Comparação
 
-| Critério | Opção A — Dataset real (CAIDA ARK) | Opção B — API RIPE Atlas |
+| Critério | Opção A — Dataset real (CAIDA Ark) | Opção B — API RIPE Atlas |
 | - | - | - |
-| Controle sobre a coleta | Opção A — Baixo: A coleta é pré-definida pela infraestrutura da CAIDA. Não é possível escolher alvos pontuais em tempo real, alterar frequências ou customizar pacotes sob demanda. |
-| Opção B — Alto: Controle total sobre os parâmetros. O usuário define o alvo exato (IP ou domínio), o protocolo, a frequência, o número de pacotes e os pontos de origem. |
-| - | - | - |
-| Diversidade geográfica | Opção A - Moderada a alta (foco em infraestrutura): Dezenas de monitores dedicados  instalados principalmente em backbones, universidades e datacenters parceiros globalmente. | 
-| Opção B - Muito alta (foco na borda da rede): Mais de 10.000 sondas ativas distribuídas globalmente, cobrindo milhares de ASNs em conexões residenciais, corporativas, IXPs e datacenters. |
-| - | - | - |
-| Custo / complexidade de implementação | Opção A - Custo financeiro gratuito (Complexidade alta). Exige download de arquivos pesados e descompactação no formato binário para extração em CSV/JSON. | 
-| Opção B - Custo baseado em créditos (Complexidade baixa a moderada). A comunicação via API REST padrão com payload e respostas diretamente em JSON, integrável com qualquer linguagem. |
-| - | - | - |
-| Tempo até os primeiros dados estarem disponíveis | Opção A - Lento a moderado: Depende da aprovação cadastral do formulário de acesso da CAIDA, somado ao tempo de download e processamento dos dumps brutos. |
-| Opção B - Imediato a poucos minutos: Uma vez criada a medição via requisição POST autenticada, as sondas disparam e os primeiros resultados JSON ficam acessíveis via GET quase em tempo real. |
+| Controle sobre a coleta | Baixo: a coleta é pré-definida pela infraestrutura da CAIDA. Não é possível escolher alvos pontuais em tempo real, alterar frequências ou customizar pacotes sob demanda. | Alto: controle total sobre os parâmetros. O usuário define o alvo exato (IP ou domínio), o protocolo, a frequência, o número de pacotes e os pontos de origem. |
+| Diversidade geográfica | Moderada a alta (foco em infraestrutura): dezenas de monitores dedicados instalados principalmente em backbones, universidades e datacenters parceiros globalmente. | Muito alta (foco na borda da rede): mais de 10.000 sondas ativas distribuídas globalmente, cobrindo milhares de ASNs em conexões residenciais, corporativas, IXPs e datacenters. |
+| Custo / complexidade de implementação | Custo financeiro gratuito, porém complexidade alta: exige download de arquivos pesados e descompactação no formato binário .warts para extração em CSV/JSON. | Custo baseado em créditos, complexidade baixa a moderada: comunicação via API REST padrão, com payload e respostas diretamente em JSON, integrável com qualquer linguagem. |
+| Tempo até os primeiros dados estarem disponíveis | Lento a moderado: depende da aprovação cadastral do formulário de acesso da CAIDA, somado ao tempo de download e processamento dos dumps brutos. | Imediato a poucos minutos: uma vez criada a medição via requisição POST autenticada, as sondas disparam e os primeiros resultados JSON ficam acessíveis via GET quase em tempo real. |
 
 
 ## 5. Recomendação
 
-| É recomendado usar a Opção B (API do RIPE Atlas), para o desenvolvimento imediato. Mantendo a Opção A - Dataset Real (CAIDA ARK), como uma alternativa caso ocorra algum erro com a API. |
+| Recomenda-se adotar a *Opção B (API do RIPE Atlas)* como fonte primária de dados para esta etapa, mantendo a *Opção A (CAIDA Ark)* como fonte de contingência e validação cruzada.
+
+A escolha se apoia em três fatores da comparação da Seção 4:
+
+1. *Controle sobre a coleta* — o pipeline precisa extrair latência, perda e jitter de alvos específicos; a RIPE Atlas permite definir exatamente o protocolo (ICMP ping), o alvo, a frequência e o número de pacotes, enquanto o CAIDA Ark oferece apenas medições pré-definidas pela própria infraestrutura, sem possibilidade de customização sob demanda.
+2. *Complexidade de implementação* — os resultados da RIPE Atlas já chegam em JSON estruturado via requisições REST padrão, reduzindo o esforço de parsing frente ao formato binário warts da CAIDA, que exige download de arquivos pesados e uma etapa extra de conversão antes de alimentar o pipeline.
+3. *Diversidade geográfica na borda da rede* — as mais de 10.000 sondas da RIPE Atlas cobrem conexões residenciais, corporativas e IXPs, o que é mais representativo de cenários reais de uso do que os monitores da CAIDA, concentrados em backbones e datacenters.
+
+*Plano de contingência:* se a API do RIPE Atlas ficar indisponível, esgotar créditos ou sofrer rate limiting durante o desenvolvimento, a equipe usará o dataset CAIDA Ark (já convertido para CSV/JSON) como fonte alternativa. Recomenda-se também salvar localmente os resultados JSON obtidos via RIPE Atlas assim que coletados, evitando depender de novos créditos em caso de reexecução dos testes. |
 
 ## 6. Justificativa
 
-| Agilidade no ciclo de desenvolvimento, aderência a cenários reais de aplicação e flexibilidade e customização de testes. |
+| Tanto o CAIDA Ark quanto a RIPE Atlas realizam medição ativa em escala global, mas o que o pipeline precisa não é apenas "ter" latência, perda e jitter — é poder *definir o alvo, o momento e a frequência da medição* para gerar dados controlados e repetíveis durante o desenvolvimento e os testes. Nesse ponto concreto, os dois sistemas divergem:
+
+- *Controle do alvo e do experimento:* o Ark executa apenas as medições já programadas pela própria infraestrutura da CAIDA, entre monitores e prefixos definidos por ela (Seção 2). A equipe não escolhe o IP/domínio de destino nem o momento da coleta. Já na Atlas, a equipe define o alvo via target e dispara a medição sob demanda com POST /api/v2/measurements/ (Seção 3), o que é indispensável para testar o pipeline contra hosts específicos do próprio projeto.
+- *Formato e tempo até o dado utilizável:* a Atlas devolve o RTT de cada pacote já em JSON estruturado via GET /.../results/, pronto para alimentar o cálculo de latência média, perda e jitter em minutos. O Ark distribui os dados brutos em .warts, que exige conversão antes de qualquer extração (comparação da Seção 4, linhas "Custo/complexidade" e "Tempo até os primeiros dados").
+- *Aderência a cenários reais de borda:* as mais de 10.000 sondas da Atlas estão em conexões residenciais, corporativas e IXPs, enquanto os monitores do Ark ficam concentrados em backbones e datacenters (Seção 4, linha "Diversidade geográfica"). Para um pipeline que quer caracterizar a experiência de rede do usuário final, a borda é o ambiente mais representativo.
+
+Ou seja, o diferencial da Atlas para X = [latência, perda, jitter] não é a existência da métrica — que o Ark também produz — mas o *controle do alvo, a customização da frequência e o formato JSON imediato*, que tornam o ciclo de desenvolvimento e teste do pipeline muito mais rápido e repetível. |
 
 ## 7. Riscos e limitações
 
-| Riscos e Limitações da Ripe ATLAS: Esgotamento de créditos, limitação de taxa (rate limiting)/dependência de serviço externo e volatilidade de sondas residenciais. |
-| Riscos e Limitações da CAIDA Ark: Atraso por burocracia de acesso e custo computacional de ETL. |
+*RIPE Atlas*
+
+| Risco | Mitigação |
+| - | - |
+| Esgotamento de créditos para criar novas medições | Monitorar o saldo de créditos pela API (https://atlas.ripe.net/docs/credits/) antes de cada rodada de testes e salvar localmente os resultados JSON já coletados, evitando reconsultas desnecessárias. |
+| Limitação de taxa (rate limiting) e dependência de serviço externo | Implementar backoff exponencial nas chamadas à API e, em caso de indisponibilidade prolongada, acionar o plano de contingência com o dataset CAIDA Ark (Seção 5). |
+| Volatilidade de sondas residenciais (sonda pode ficar offline durante a medição) | Selecionar mais de uma sonda por região na criação da medição e descartar, na análise, resultados de sondas que não responderam ao ciclo completo. |
+
+*CAIDA Ark*
+
+| Risco | Mitigação |
+| - | - |
+| Atraso por burocracia de acesso (aprovação cadastral) | Solicitar o cadastro no início do projeto, mesmo usando a Atlas como fonte primária, para já ter a alternativa disponível caso seja necessário acioná-la. |
+| Custo computacional de ETL (conversão de .warts para CSV/JSON) | Restringir a conversão aos subconjuntos de dados relevantes ao projeto (prefixos/monitores de interesse) em vez de processar o dump completo. |
 
 ## 8. Contribuição Individual dos Integrantes
 
