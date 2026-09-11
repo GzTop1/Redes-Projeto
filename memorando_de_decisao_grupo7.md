@@ -19,7 +19,7 @@ A equipe precisa decidir entre utilizar um dataset público pré-existente ou a 
 
 ## 2. Opção A — Dataset real
 
-- **Origem / link:** CAIDA (Center for Applied Internet Data Analysis) — Archipelago (Ark) Topology Data ([https://www.caida.org/data/active/ipv4\_all\_pref\_topology\_dataset.xml](https://www.google.com/search?q=https://www.caida.org/data/active/ipv4_all_pref_topology_dataset.xml))
+- **Origem / link:** CAIDA (Center for Applied Internet Data Analysis) — Archipelago (Ark) Topology Data ([https://www.caida.org/projects/ark/topo_datasets](https://www.caida.org/projects/ark/topo_datasets))
 
 - **Formato:** Archival Format / scamper warts (conversível para JSON, CSV ou plain text).
 
@@ -35,13 +35,13 @@ Segundo a documentação oficial da CAIDA (2026), o dataset Archipelago realiza 
 
 ## 3. Opção B — API do RIPE Atlas
 
-- **Documentação consultada (link):** RIPE Atlas API v2 Documentation ([https://ripe-atlas-api.readthedocs.io/](https://www.google.com/search?q=https://ripe-atlas-api.readthedocs.io/) e [https://atlas.ripe.net/docs/apis/](https://atlas.ripe.net/docs/apis/))
+- **Documentação consultada (link):** RIPE Atlas REST API Manual — documentação oficial da RIPE NCC ([https://atlas.ripe.net/docs/apis/](https://atlas.ripe.net/docs/apis/)), especificamente as páginas de criação de medições ([https://atlas.ripe.net/docs/apis/rest-api-manual/measurements/creating-measurements/](https://atlas.ripe.net/docs/apis/rest-api-manual/measurements/creating-measurements/)) e de obtenção de resultados ([https://atlas.ripe.net/docs/apis/rest-api-manual/measurements/results-and-latest/](https://atlas.ripe.net/docs/apis/rest-api-manual/measurements/results-and-latest/))
 
-- **Autenticação exigida:** API Key (Chave de API) enviada via cabeçalho HTTP (`Authorization: Key \<sua-chave\>`) ou parâmetro de URL. Para criar medições ativas, é necessário consumir créditos do RIPE Atlas.
+- **Autenticação exigida:** API Key (Chave de API) enviada via cabeçalho HTTP (Authorization: Key \<sua-chave\>) ou parâmetro de URL. Para criar medições ativas, é necessário consumir créditos do RIPE Atlas.
 
-- **Como se cria uma medição:** Envia-se uma requisição HTTP `POST` para o endpoint `/api/v2/measurements/` com um corpo JSON definindo o tipo (`type: "ping"`), os alvos (`target`), o número de pacotes, o intervalo e o tipo de sondas a serem utilizadas.
+- **Como se cria uma medição:** Envia-se uma requisição HTTP POST para o endpoint /api/v2/measurements/ com um corpo JSON definindo o tipo (type: "ping"), os alvos (target), o número de pacotes, o intervalo e o tipo de sondas a serem utilizadas.
 
-- **Como se consultam os resultados:** Realiza-se uma requisição HTTP `GET` no endpoint `/api/v2/measurements/\{id\}/results/`. Os resultados retornam em formato JSON detalhado, contendo arrays com os valores individuais de RTT de cada pacote ICMP enviada por cada sonda.
+- **Como se consultam os resultados:** Realiza-se uma requisição HTTP GET no endpoint /api/v2/measurements/\{id\}/results/. Os resultados retornam em formato JSON detalhado, contendo arrays com os valores individuais de RTT de cada pacote ICMP enviada por cada sonda.
 
 **Resumo do que foi encontrado:**
 
@@ -141,14 +141,20 @@ Ou seja, o diferencial da Atlas para X = [latência, perda, jitter] não é a ex
 
 ## Fontes consultadas
 
-1. [ RIPE Atlas (API e JSON): https://ripe-atlas-api.readthedocs.io/ - documentação dos endpoints (POST /measurements/ e GET /results/) ] 
+1. [ RIPE Atlas — REST API Manual (visão geral): https://atlas.ripe.net/docs/apis/ ] 
+   
+2. [ RIPE Atlas — criação de medições (POST /api/v2/measurements/): https://atlas.ripe.net/docs/apis/rest-api-manual/measurements/creating-measurements/ ]
 
-2. [ RIPE Atlas (Créditos): https://atlas.ripe.net/docs/credits/ ] 
+3. [ RIPE Atlas — obtenção de resultados (GET /api/v2/measurements/{id}/results/): https://atlas.ripe.net/docs/apis/rest-api-manual/measurements/results-and-latest/ ]
 
-3. [ RIPE Atlas (Mapa de sondas): https://atlas.ripe.net/about/probes/ ] 
+4. [ RIPE Atlas — créditos: https://atlas.ripe.net/docs/credits/ ]
 
-4. [ CAIDA Ark: https://www.caida.org/projects/ark/ ]
+5. [ RIPE Atlas — mapa e cobertura de sondas: https://atlas.ripe.net/about/probes/ ]
 
-5. [ https://www.caida.org/data/acceptable_use_agreement/ ]
+6. [ CAIDA Ark — projeto: https://www.caida.org/projects/ark/ ]
+ 
+7. [ CAIDA Ark — datasets de topologia: https://www.caida.org/projects/ark/topo_datasets ]
 
-6. [ https://www.caida.org/catalog/software/scamper/ ]
+8. [ CAIDA — Acceptable Use Agreement: https://www.caida.org/data/acceptable_use_agreement/ ]
+
+9. [ CAIDA — scamper (ferramenta de coleta, formato .warts): https://www.caida.org/catalog/software/scamper/ ]
