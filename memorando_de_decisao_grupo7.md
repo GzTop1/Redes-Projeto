@@ -134,7 +134,7 @@ Ou seja, o diferencial da Atlas para X = [latência, perda, jitter] não é a ex
 
 - **Tempo dedicado (aprox.):** `1h10`
 
-- **Evidência da contribuição** *(print de conversa, rascunho):* [prints/evidencia_davi.png](prints/evidencia_davi.png)
+- **Evidência da contribuição** *(rascunho):* [prints/evidencia_davi.png](prints/evidencia_davi.png)
 
 
 ## Fontes consultadas
