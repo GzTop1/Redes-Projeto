@@ -102,7 +102,7 @@ Ou seja, o diferencial da Atlas para X = [latência, perda, jitter] não é a ex
 
 - **Tempo dedicado (aprox.):** `4h`
 
-- **Evidência da contribuição:** Print do rascunho e das pesquisas dos tópicos 1, 2 e 3 — [prints/evidencia_isaac.png](prints/evidencia_isaac.png)
+- **Evidência da contribuição:** Print do rascunho e das pesquisas dos tópicos 1, 2 e 3 — [https://github.com/GzTop1/Redes-Projeto/blob/main/prints/Isaac/Entrega_1/evidencia_isaac.png](https://github.com/GzTop1/Redes-Projeto/blob/main/prints/Isaac/Entrega_1/evidencia_isaac.png)
 
 ### Integrante 2 — `Geziel de Andrade`
 
@@ -110,7 +110,7 @@ Ou seja, o diferencial da Atlas para X = [latência, perda, jitter] não é a ex
 
 - **Tempo dedicado (aprox.):** `2h30`
 
-- **Evidência da contribuição:** [prints/evidencia_geziel.png](prints/evidencia_geziel.png)
+- **Evidência da contribuição:** [https://github.com/GzTop1/Redes-Projeto/blob/main/prints/Geziel/Entrega_1/evidencia_geziel.png](https://github.com/GzTop1/Redes-Projeto/blob/main/prints/Geziel/Entrega_1/evidencia_geziel.png)
 
 ### Integrante 3 — `Fernanda Akemi Martins Sanpei`
 
@@ -118,7 +118,7 @@ Ou seja, o diferencial da Atlas para X = [latência, perda, jitter] não é a ex
 
 - **Tempo dedicado (aprox.):** `50min`
 
-- **Evidência da contribuição** *(rascunho):* [prints/evidencia_fernanda.png](prints/evidencia_fernanda.png)
+- **Evidência da contribuição** *(rascunho):* [https://github.com/GzTop1/Redes-Projeto/blob/main/prints/Fernanda/Entrega_1/evidencia_fernanda.png](https://github.com/GzTop1/Redes-Projeto/blob/main/prints/Fernanda/Entrega_1/evidencia_fernanda.png)
 
 ### Integrante 4 — `Hendrick Ambriola`
 
@@ -126,7 +126,7 @@ Ou seja, o diferencial da Atlas para X = [latência, perda, jitter] não é a ex
 
 - **Tempo dedicado (aprox.):** `40min`
 
-- **Evidência da contribuição** *(rascunho):* [prints/evidencia_hendrick.png](prints/evidencia_hendrick.png)
+- **Evidência da contribuição** *(rascunho):* [https://github.com/GzTop1/Redes-Projeto/blob/main/prints/Hendrick/Entrega_1/evidencia_hendrick.png](https://github.com/GzTop1/Redes-Projeto/blob/main/prints/Hendrick/Entrega_1/evidencia_hendrick.png)
 
 ### Integrante 5 — `Davi Gabriel Borges dos Santos`
 
@@ -134,7 +134,7 @@ Ou seja, o diferencial da Atlas para X = [latência, perda, jitter] não é a ex
 
 - **Tempo dedicado (aprox.):** `1h10`
 
-- **Evidência da contribuição** *(rascunho):* [prints/evidencia_davi.png](prints/evidencia_davi.png)
+- **Evidência da contribuição** *(rascunho):* [https://github.com/GzTop1/Redes-Projeto/blob/main/prints/Davi/Entrega_1/evidencia_davi.png](https://github.com/GzTop1/Redes-Projeto/blob/main/prints/Davi/Entrega_1/evidencia_davi.png)
 
 
 ## Fontes consultadas
