@@ -119,7 +119,7 @@ Regras da coleta:
 2. Como grupo, quero preservar o JSON bruto com os timeouts, para que nenhuma ausência de resposta vire RTT 0 e a Tarefa 2 possa refazer tudo a partir do bruto. *Critério de aceite:* 266 arquivos intactos em `data/raw/`; 227 RTT vazios e nenhum RTT 0 na tabela de trabalho.  
 3. Como grupo, quero separar o Período A e o Período B sem rotular, para que o baseline seja calculado só com o passado. *Critério de aceite:* A de 06/09 a 13/09 e B de 13/09 a 20/09, sem timestamp em comum; nenhuma coluna de classe nesta tarefa.
 
-**Link do board:** _(preencher)_
+**Link do board:** _https://github.com/users/GzTop1/projects/1_
 
 ## 5. Diário de bordo
 
@@ -134,7 +134,7 @@ Regras da coleta:
 
 ## 6. Evidências gerais
 
-- Link do RFC: __
+- Link do RFC: _https://github.com/GzTop1/Redes-Projeto/blob/main/Projeto_Preditor_Redes_Grupo7/RFC_Preditor_Degradacao_Rede_Grupo7.md_
 - Link do dicionário v0.1: notebook `Projeto_Preditor_Falhas_PPF_.ipynb`, seção 1.7
 - Link dos commits: https://github.com/GzTop1/Redes-Projeto/commits/main
 - Link de `data/raw/` e do `config/`: _https://drive.google.com/drive/folders/1OrkS3nEqfN4gc53uTRT9WUrMwwWddhYc?usp=sharing_
