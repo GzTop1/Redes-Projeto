@@ -53,7 +53,7 @@ Fonte: medições públicas já existentes de ping IPv4 (mesh de Anchors do RIPE
 | `measurement_id` | — | Identidade da medição | `msm_id` |
 | `probe_id` | — | Origem | `probe_id` |
 | `anchor_id` | — | Destino | `anchor_id` |
-| `fluxo_id` | texto estável | `{probe_id}_{anchor_id}` | `fluxo_id` |
+| `id_fluxo` | texto estável | `{probe_id}_{anchor_id}` | `id_fluxo` |
 | RTT da rajada (médio; mín/máx) | ms | Vazio se não houver resposta. **Nunca 0** | `rtt_min`, `rtt_avg`, `rtt_max` |
 | enviados, recebidos | contagem | | `sent`, `rcvd`, `n_rtt` |
 | `perda_pct` | % | `(enviados − recebidos) / enviados × 100` | `perda_pct` |
@@ -80,14 +80,14 @@ Regras da coleta:
 | Sondas de origem | 129 sondas distintas | 129 probes |
 | Fluxos gerados | Pares `probe_id_anchor_id` | 150 fluxos |
 
-**Decisão documentada:** Substituição de destinos sem fluxo utilizável (`[4227, 4862]`) e filtragem rigorosa por cobertura mínima de 80% (2.016 de 2.520 execuções), resultando em 131 fluxos na classe `A+B` aprovados para a modelagem.
+**Decisão documentada:** nenhum destino foi trocado depois da coleta. Cada fluxo só entra em um período com cobertura mínima de 80% (2.016 de 2.520 execuções) e, no Período A, com pelo menos 30 TTL válidos. Os fluxos que não atingem esse mínimo são **excluídos**, com o motivo registrado em `config/exclusoes_fluxos.csv`. Resultado: 131 fluxos na classe `A+B` seguem para a modelagem; os destinos 4227 (Changhua/TW) e 4862 (Antananarivo/MG) ficaram sem fluxo utilizável e foram mantidos como exclusão declarada, não substituídos.
 
-**Evidências (notebook, commit, trecho do config):** Notebook `Projeto_Preditor_Falhas_PPF_corrigido_v3.ipynb`, seções 1.1 a 1.6-A; `config/correcoes_com_fonte_professora.csv`; `config/evidencias.jsonl`.
+**Evidências (notebook, commit, trecho do config):** notebook `Projeto_Preditor_Redes_Grupo7/Projeto_Preditor_Falhas_PPF.ipynb`, seções 1.1 a 1.6-A; `config/correcoes_com_fonte_professora.csv`; `config/evidencias.jsonl`.
 
 ## 3. Relatório de qualidade — ainda sem classe
 
 - [x] Registros totais gerados: **695.132 registros em 141 fluxos** processados na tabela de trabalho.
-- [x] Coluna `ttl` preenchida em **95.5% das linhas**.
+- [x] Coluna `ttl` preenchida em **95,5% das linhas**.
 - [x] Duplicatas: 0.
 - [x] RTT e perda descritos **sem** dizer OK, RISCO ou FALHA.
 - [x] Cobertura mínima de 80% aplicada: 131 fluxos na classe `A+B`, 8 na classe `B`, 11 na classe `nenhum` (19 fluxos excluídos com registro em `config/exclusoes_fluxos.csv`).
@@ -111,7 +111,7 @@ Regras da coleta:
 
 | Integrante | O que fiz nesta tarefa | Dificuldades | O que pretendo manter/ajustar |
 |---|---|---|---|
-| Isaac William Braz | Alinhamento completo com o modelo da professora (etapas 1 a 5); configuração das 30 âncoras estratificadas; busca de medições mesh; seleção de 150 fluxos com base em diversidade e distância; coleta dos 420 arquivos JSON em janelas UTC de hora cheia; processamento da tabela de trabalho (695.132 registros, TTL preenchido em 95.5%); aplicação do filtro de cobertura ≥ 80% (131 fluxos `A+B`); elaboração do dicionário v0.1 e registro de evidências e correções. | Ajuste fina das regras de API REST do RIPE Atlas (cache, tratamento de 429/5xx vs 404) e alinhamento estrito das janelas temporais em hora cheia UTC conforme o pipeline da professora. | Manter a equivalência rigorosa com o código da professora e o rastreio em `config/evidencias.jsonl`. |
+| Isaac William Braz | Alinhamento completo com o modelo da professora (etapas 1 a 5); configuração das 30 âncoras estratificadas; busca de medições mesh; seleção de 150 fluxos com base em diversidade e distância; coleta dos 420 arquivos JSON em janelas UTC de hora cheia; processamento da tabela de trabalho (695.132 registros, TTL preenchido em 95,5%); aplicação do filtro de cobertura ≥ 80% (131 fluxos `A+B`); elaboração do dicionário v0.1 e registro de evidências e correções. | Ajuste fino das regras de API REST do RIPE Atlas (cache, tratamento de 429/5xx vs 404) e alinhamento estrito das janelas temporais em hora cheia UTC conforme o pipeline da professora. | Manter a equivalência rigorosa com o código da professora e o rastreio em `config/evidencias.jsonl`. |
 | Fernanda Akemi Martins Sanpei | Auxílio na revisão das diretrizes metodológicas e preparação para a Tarefa 3. | — | — |
 | Geziel de Andrade | Colaboração na estruturação do repositório e suporte à integração com o GitHub. | — | — |
 | Hendrick Ambriola | Preparação para a transição dos dados para a etapa de modelagem (Tarefa 4). | — | — |
@@ -121,7 +121,7 @@ Regras da coleta:
 ## 6. Evidências gerais
 
 - Link do repositório: *https://github.com/GzTop1/Redes-Projeto*
-- Link do dicionário v0.1: notebook `Projeto_Preditor_Falhas_PPF_corrigido_v3.ipynb`, seção 1.7
+- Link do dicionário v0.1: notebook `Projeto_Preditor_Redes_Grupo7/Projeto_Preditor_Falhas_PPF.ipynb`, seção 1.7
 - Link dos commits: *https://github.com/GzTop1/Redes-Projeto/commits/main*
 
 ---
@@ -130,8 +130,8 @@ Regras da coleta:
 
 | Critério | Peso | Nota máxima | Nota | Observações |
 |---|---|---|---|---|
-| Problema | 0,5 | Fluxo, unidade de análise e proibição de RTT absoluto como falha estão explícitos | 0 | Atendido integralmente com base no pipeline oficial |
-| Coleta bruta | 1,5 | Vários fluxos (30 âncoras estratificadas), timeout preservado, RTT vazio ≠ 0, config externa, bruto intocável | 0 | 420 arquivos `data/raw/` validados |
-| Período A e Período B sem rótulo | 1,0 | Dois blocos em hora cheia sem sobreposição; relatório de qualidade **sem** classe | 0 | Janelas A e B alinhadas sem rótulos |
-| Scrum + diário | 1,0 | Papéis, board, histórias e diário de todos | 0 | Scrum Master Isaac William Braz e equipe alinhados |
-| **Total** | **4,0** | | **0 / 4,0** | |
+| Problema | 0,5 | Fluxo, unidade de análise e proibição de RTT absoluto como falha estão explícitos | | |
+| Coleta bruta | 1,5 | Vários fluxos (30 âncoras estratificadas), timeout preservado, RTT vazio ≠ 0, config externa, bruto intocável | | |
+| Período A e Período B sem rótulo | 1,0 | Dois blocos em hora cheia sem sobreposição; relatório de qualidade **sem** classe | | |
+| Scrum + diário | 1,0 | Papéis, board, histórias e diário de todos | | |
+| **Total** | **4,0** | | **___ / 4,0** | |
