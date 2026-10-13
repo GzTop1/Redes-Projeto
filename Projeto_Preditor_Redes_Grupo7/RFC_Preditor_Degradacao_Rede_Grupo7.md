@@ -1,20 +1,23 @@
-# RFC: Preditor de degradação de rede com RTT normalizado — Grupo 7
+# RFC: Preditor de degradação de rede relativo ao baseline do fluxo — Grupo 7
 
 **Equipe:** Grupo 7 — Isaac William Braz, Fernanda Akemi Martins Sanpei, Geziel de Andrade, Hendrick Ambriola, Davi Gabriel Borges dos Santos, Victor Gabriel Alves  
 **Repositório GitHub:** https://github.com/GzTop1/Redes-Projeto  
-**Notebook de referência:** `Projeto_Preditor_Falhas_PPF_.ipynb` (todos os números deste documento vêm da execução final, de 07/10/2026)
+**Notebook de referência:** 
+**Versão:** 2.0 (substitui a v1, de 07/10/2026; ver seção 15)
 
-> Um RFC formaliza o problema, o contrato dos dados e o critério de decisão antes de se investir no classificador. Este documento escolhe a **representação** do fenômeno (RTT normalizado por fluxo). Nesta disciplina, o classificador é uma **árvore de decisão (CART)**, ajustada nas Tarefas 3 e 4 olhando só a validação.
+> Um RFC formaliza o problema, o contrato dos dados e o critério de decisão antes de se investir no classificador. Esta versão segue o pipeline de referência da professora (`preditor_redes-main`, etapas 1 a 8). A etapa 9 (monitoramento) e a pasta `producao/` não fazem parte do trabalho.
+
+> **Pendência de decisão (confirmar com a professora):** os roteiros das Tarefas 3 e 4 pedem uma árvore de decisão e vetam outros algoritmos. O pipeline de referência (etapa 8) compara Naive Bayes, árvore e Random Forest e escolhe o melhor na validação. A execução v3 escolheu o Random Forest, com ganho de +0,0011 em macro-F1 sobre a árvore. Se a orientação for manter a árvore, o modelo entregue passa a ser a árvore da Tarefa 3, e o teste precisa ser registrado como nova abertura.
 
 ---
 
 ## 1. Resumo
 
-O projeto constrói um classificador de três estados — **OK**, **RISCO** e **FALHA** — para medições ICMP de pares origem–destino. O estado descreve o afastamento do fluxo em relação ao seu próprio comportamento normal, estimado num período anterior (Período A) e depois congelado.
+O projeto constrói um classificador de três estados (**OK**, **RISCO** e **FALHA**) para medições de ping IPv4 entre uma sonda de origem e uma âncora de destino do RIPE Atlas. O alvo é a **classe da próxima medição do fluxo**, cerca de 4 minutos à frente. A classe é definida em relação ao próprio histórico do fluxo (Período A): perda de pacotes e RTT ou jitter acima do P95 e do P99 daquele fluxo.
 
-A distância da rota entra na física do RTT, mas não entra na classe. Na nossa coleta, um RTT de cerca de 208 ms é o normal de um caminho BR→DE saudável, enquanto um fluxo DE→DE com mediana de cerca de 1,5 ms foi marcado como FALHA ao chegar a 2,2 ms (aumento de 45%, `z_robusto` de 6,4), porque seu desvio típico é de fração de milissegundo. A árvore aprende esse desvio em conjunto com perda, jitter relativo, timeouts e persistência.
+A distância da rota entra na física do RTT, mas não entra na classe. Um fluxo curto com mediana de 0,80 ms e um fluxo longo com mediana de 451,57 ms são, cada um, o "normal" de si mesmos. O modelo lê só razões ao baseline do fluxo, perda, TTL e janelas do passado recente.
 
-**Resultado:** a árvore final separa OK, RISCO e FALHA com **F1 macro de 0,9997** no teste temporal (contra 0,2949 da classe majoritária) e de 0,9997 em fluxos nunca vistos. Ela **não** supera a regra "repetir a classe atual" a 12 minutos, então o entregável é um **detector** do estado atual, não um preditor.
+**Resultado no teste temporal (aberto uma vez):** F1 macro de **0,7675**, contra **0,7302** da persistência ("repetir a classe atual") e 0,3082 da classe majoritária. O ganho vem de manter a classe quando ela não muda. Nos inícios de FALHA, o recall é de **0,0195** (8 de 411). Por isso o modelo funciona como um **detector suavizado**, não como um alerta antecipado.
 
 ---
 
@@ -22,14 +25,14 @@ A distância da rota entra na física do RTT, mas não entra na classe. Na nossa
 
 Uma rede em operação precisa distinguir quatro coisas que aparecem juntas numa série de ping:
 
-1. **Latência estrutural.** Mais quilômetros e mais roteadores aumentam o RTT mesmo com o caminho saudável. Na nossa coleta, a mediana do RTT é de 9,63 ms nos caminhos curtos, 36,29 ms nos regionais e 203,91 ms nos longos (BR→DE, BR→JP e BR→US). Esse atraso é esperado, não defeito.
-2. **Degradação.** O caminho continua respondendo, mas piorou em relação a si mesmo: RTT acima da variação típica, jitter instável ou perda moderada e persistente.
-3. **Indisponibilidade.** Perda total ou ausência persistente de resposta. É falha independentemente da distância.
-4. **Mudança de rota.** O RTT muda de patamar e permanece estável, com perda e jitter baixos. O enlace novo pode estar saudável; o que envelheceu foi o baseline.
+1. **Latência estrutural.** Mais quilômetros aumentam o RTT mesmo com o caminho saudável. Na nossa coleta, as medianas de RTT do Período A vão de 0,80 ms (fluxo `7326_1526`) a 451,57 ms (fluxo `6506_2581`).
+2. **Degradação.** O caminho responde, mas piorou em relação a si mesmo: RTT acima do P95 ou do P99 do fluxo, jitter acima do P95 do fluxo ou perda parcial.
+3. **Indisponibilidade.** Perda de 2 ou 3 dos 3 pacotes.
+4. **Mudança de rota.** O RTT muda de patamar e permanece. O enlace pode estar saudável; quem envelheceu foi o baseline. Fluxos em que 50% ou mais das linhas ficam acima do P99 são tratados como baseline desatualizado e saem do dataset (nenhum caso nesta coleta).
 
-Tratar "RTT alto" como falha ensina geografia. No Período B desta coleta, **70.342 medições têm RTT acima de 100 ms** (seriam FALHA na regra absoluta antiga) e **77,4% delas são OK** no critério relativo. Na árvore de contraste da Tarefa 3, um modelo que só via RTT absoluto e rota aprendeu um corte fixo de 141,2 ms e caiu para F1 macro de 0,557.
+Tratar "RTT alto" como falha ensina geografia. Na árvore de contraste da Tarefa 3, um modelo que só via RTT absoluto e rota caiu para F1 macro de 0,5279 na validação, contra 0,7691 da árvore com variáveis relativas.
 
-O usuário do alerta é quem opera a rede (campus, provedor ou NOC). O alerta apoia a decisão de investigar o enlace agora, observar, ou recalibrar o "normal" porque o caminho mudou.
+O usuário do alerta é quem opera o enlace: investigar (FALHA), observar (RISCO) ou não agir (OK). O alerta não é uma ordem de intervenção.
 
 ---
 
@@ -37,18 +40,18 @@ O usuário do alerta é quem opera a rede (campus, provedor ou NOC). O alerta ap
 
 | Pergunta | Resposta do grupo |
 |---|---|
-| Qual evento será previsto? | Degradação ou indisponibilidade de um fluxo ICMP em relação ao baseline daquele fluxo: OK, RISCO ou FALHA. Não é "rota longa" nem "RTT acima de 100 ms". |
-| Como será definida a classe? | Regra híbrida, auditável, relativa ao fluxo (seção 8.4): desvio robusto do RTT, aumento relativo, jitter relativo, perda e persistência em janelas de 5 medições. Os rótulos são operacionais: a árvore reproduz essa política, não um ticket de equipamento. |
-| Qual é o horizonte? | **Detector:** classe da medição atual (modelo oficial). **Preditor:** classe 12 minutos à frente (3 intervalos de 240 s), avaliado na Tarefa 5 contra a regra "repetir a classe atual". Resultado: sem ganho, logo o entregável é o detector. |
-| Qual é a unidade de análise? | Uma medição de um fluxo, enriquecida com a janela causal recente do mesmo fluxo. O fluxo é `fluxo_id = probe_id \| dst_addr`. |
+| Qual evento será previsto? | A **classe da próxima medição** de ping de um fluxo: OK, RISCO ou FALHA. |
+| Como a classe é definida? | Regra por fluxo, na ordem da seção 8.4: perda e RTT/jitter comparados ao P95/P99 do próprio fluxo no Período A. |
+| Qual é o horizonte? | Uma medição à frente (240 s), só se o intervalo até ela for de no máximo 600 s. |
+| Qual é a unidade de análise? | Uma execução de ping (3 pacotes) de um fluxo, com as janelas de 3, 6 e 12 medições anteriores do mesmo fluxo. |
+| O que é um fluxo? | `id_fluxo = {probe_id}_{anchor_id}` (exemplo: `6411_1070`). |
+| Contra o que é comparado? | Persistência (a classe atual como previsão da próxima) e classe majoritária. A classe atual **não** é variável do modelo. |
 
 | Classe | Significado operacional |
 |---|---|
-| **OK** | RTT, jitter e perda compatíveis com o normal daquele fluxo. |
-| **RISCO** | Desvio moderado e persistente de latência ou jitter (2 de 5 medições), ainda sem indisponibilidade. |
-| **FALHA** | Desvio extremo, perda elevada ou ausência persistente de resposta. |
-
-O quarto estado operacional, **RECALIBRAR** (mudança estável de patamar), **não foi implementado** nesta entrega; o treino usa só as três classes (ver seções 10 e 13).
+| **OK** | Perda nula, RTT e jitter dentro do P95 do fluxo. |
+| **RISCO** | 1 de 3 pacotes perdido, ou RTT acima do P95, ou jitter acima do P95. |
+| **FALHA** | 2 ou 3 de 3 pacotes perdidos, ou RTT acima do P99 do fluxo. |
 
 ---
 
@@ -56,18 +59,17 @@ O quarto estado operacional, **RECALIBRAR** (mudança estável de patamar), **n�
 
 | Pergunta | Resposta do grupo |
 |---|---|
-| Recorte | Overlay lógica sobre o *Anchoring Mesh* público do RIPE Atlas (ping IPv4). **8 rotas de desenho**: curtas BR→BR e DE→DE; regionais BR→AR, BR→CL e DE→NL; longas BR→DE, BR→JP e BR→US. **14 IPs de destino** (2 por país), **11 probes de origem** (Anchors do Brasil e da Alemanha) e **64 fluxos**. Dois destinos que ficaram 100% sem resposta (Tostado/AR e Nuremberg/DE) foram trocados por Buenos Aires e Mainz, com a versão anterior preservada. A classe não usa país nem categoria geográfica. |
-| Período | 06/09/2026 04:32 UTC a 20/09/2026 04:32 UTC. Período A (baseline): 06/09 a 13/09. Período B (dataset): 13/09 a 20/09. Sem sobreposição. |
-| Dentro do escopo | Leitura de medições existentes (`GET`); JSON bruto preservado; baseline congelado por fluxo; features relativas; rótulos OK / RISCO / FALHA; split temporal com folga e hold-out de fluxos; comparação com a classe majoritária e com a persistência; ficha da árvore e dicionário versionado. |
-| Fora de escopo | Criar medições (`POST`) ou gastar créditos do RIPE Atlas. IPv6, traceroute e HTTP. Limiar global de RTT (50 ms, 100 ms ou qualquer outro). País, IP, rota ou `fluxo_id` como coluna da árvore. Balancear o dataset escolhendo rotas que "fabricam" uma classe. Preencher RTT ausente com 0. Split aleatório de linhas. Outros algoritmos (floresta, boosting, redes). O estado RECALIBRAR. |
+| Recorte | Ping IPv4 público do *Anchoring Mesh* do RIPE Atlas. **30 âncoras de destino** (1 no Brasil e 29 países distintos, cotas por continente, máximo de 6 na Europa, 1 por ASN, faixas de distância < 4.000 km, < 10.000 km e ≥ 10.000 km, sorteio com SEED 42). **3 a 5 sondas por destino** escolhidas por diversidade de ASN, faixa, continente e país: **150 fluxos**, 129 sondas distintas. |
+| Período | Período A (baseline): 21/09/2026 18:00 a 28/09/2026 18:00 UTC. Período B (dataset): 28/09/2026 18:00 a 05/10/2026 18:00 UTC. Janelas em hora cheia, sem sobreposição. Os resultados foram baixados em 11/10/2026 do endpoint histórico `/results/`. |
+| Cobertura | Um fluxo só entra em um período com pelo menos 80% das 2.520 execuções esperadas (2.016) e, no A, com pelo menos 30 TTL válidos. Só fluxos **A+B** seguem para o modelo: **131 de 150**. |
+| Dentro do escopo | `GET` público; JSON bruto preservado; baseline congelado; variáveis relativas; rótulo por regra; split temporal com embargo; fluxos não vistos sorteados antes do treino; comparação com persistência e classe majoritária; ficha do modelo; teste de equivalência com o código da professora. |
+| Fora de escopo | `POST` e créditos do RIPE Atlas. IPv6, traceroute, HTTP. Limiar global de RTT. País, IP, rota ou `id_fluxo` como variável. Trocar destinos depois de coletar. RTT ausente gravado como 0. Split aleatório. Etapa 9 (monitoramento). |
 
 ---
 
 ## 5. Usuários e decisão apoiada
 
-O alerta é para quem administra o enlace monitorado. Com **FALHA**, a ação é investigar perda, timeout ou desvio extremo. Com **RISCO**, a ação é observar e priorizar, sem tratar o evento como queda. Com **OK**, nenhuma intervenção. Uma mudança estável de patamar deveria levar a abrir um novo período de baseline (RECALIBRAR), e não a abrir chamado de falha; isso fica como trabalho futuro.
-
-O mesmo contrato vale para um log local da instituição, depois de um aquecimento de pelo menos 1.500 amostras válidas naquele fluxo. Sem esse aquecimento não há mediana confiável e o modelo não opera.
+Com **FALHA**, a ação é investigar perda ou latência extrema. Com **RISCO**, observar e priorizar. Com **OK**, nada. Um fluxo novo só pode ser classificado depois de um Período A próprio com pelo menos 30 RTT válidos e cobertura mínima de 80%.
 
 ---
 
@@ -75,160 +77,131 @@ O mesmo contrato vale para um log local da instituição, depois de um aquecimen
 
 | Fonte | O que fornece | Papel |
 |---|---|---|
-| RIPE Atlas v2, mesh de Anchors, ping IPv4 (`GET` público) | Timestamp, `probe_id`, destino, RTT da rajada (3 pacotes), enviados/recebidos | Medição bruta (`data/raw/`, 266 arquivos JSON, 178 MB) |
-| Período A, por `fluxo_id` | Mediana, MAD, IQR, jitter típico, perda típica, proporção de resposta | Baseline congelado (`baseline_por_fluxo.csv`). Não é linha de treino. |
-| Período B | Métricas relativas, janelas de 5 medições, classe e bloco | Dataset rotulado (`periodo_B_rotulado.csv`) |
+| RIPE Atlas v2: `/anchors/`, `/anchor-measurements/`, `/measurements/`, `/probes/` | Âncoras, medições mesh, sondas participantes | Desenho (`config/anchors_selecionadas.json`, `medicoes_ping_ongoing.json`, `tabela_desenho.csv`) |
+| `/measurements/{msm_id}/results/` | Timestamp, sonda, RTT dos 3 pacotes, enviados, recebidos, TTL | Bruto: **420 arquivos JSON** em `data/raw/` (331,4 MB), 30 medições × 14 dias |
+| Período A | P95/P99 de RTT e jitter, mediana do TTL | `baseline_por_fluxo.csv` (congelado) |
+| Período B | 21 variáveis, classe atual, alvo t+1, bloco | `dataset_final.csv` |
 
 **Volume observado:**
-- **322.016 registros** na tabela de trabalho: 161.135 no Período A e 160.881 no B.
-- **64 fluxos com baseline** (todos acima de 1.500 RTT válidos; nenhum excluído).
-- **227 timeouts** (RTT vazio, nunca 0) e **0 duplicatas**.
-- Cada fluxo tem entre 5.011 e 5.039 medições, de 5.040 esperadas.
-- No Período B, a distribuição é **80,8% OK, 9,5% RISCO e 9,7% FALHA**. A malha passa a maior parte do tempo no próprio normal.
+- **695.132 registros** na tabela de trabalho (345.094 no A e 350.038 no B), em 141 fluxos com resultado.
+- RTT ausente (timeout) em 4,51% das linhas, sempre vazio, nunca 0. TTL presente em 95,5%. Duplicatas: 0.
+- 61 medições de ping IPv4 Ongoing para as 30 âncoras; todos os 30 ids mesh conferidos.
+- **131 fluxos com baseline VÁLIDO.** 19 fluxos excluídos por cobertura (motivos em `config/exclusoes_fluxos.csv`). Os destinos 4227 (Changhua/TW) e 4862 (Antananarivo/MG) ficaram sem fluxo utilizável.
+- Período B rotulado: **328.421 medições**, sendo 86,76% OK, 9,15% RISCO e 4,09% FALHA.
 
-O alvo do preditor (classe 12 minutos à frente) não foi gravado como arquivo separado: ele é derivado no notebook (seção 5.4), buscando a medição do mesmo fluxo mais próxima de t + 720 s, no mesmo bloco.
+Jitter: desvio-padrão **populacional** dos RTT da execução; 0 com uma resposta; vazio sem RTT.
 
-Cadência do mesh: 240 segundos. O jitter é o desvio-padrão dos RTT da rajada só quando há pelo menos duas respostas; com 0 ou 1 resposta fica vazio (436 medições).
-
-**Dicionário de dados:** versões v0.1 (bruto), v0.2 (ficha, métricas e classe), v0.3 (colunas relativas novas) e v0.4 (colunas da árvore final), todas no notebook. País, endereço e rota ficam só na auditoria (`config/tabela_desenho.csv`).
+País, IP, rota, faixa de distância e ASN ficam só em `config/tabela_desenho.csv`, para auditoria.
 
 ---
 
 ## 7. Custo dos erros
 
-| Tipo de erro | O que significa | Consequência |
+| Tipo de erro | O que significa | No teste |
 |---|---|---|
-| Falso negativo de FALHA | Indisponibilidade ou desvio extremo classificado como OK ou RISCO | O enlace degrada sem investigação. **É o erro mais grave.** No teste: 4 de 3.657 FALHAs (2 viraram RISCO, 2 viraram OK). |
-| Falso negativo de RISCO | Início de saturação tratado como OK | Atraso na priorização. RISCO é 9,5% do Período B. No teste: 0 casos. |
-| Falso positivo de FALHA | Rota longa saudável, pico isolado ou mudança estável de caminho rotulados como queda | Fadiga de alerta e chamado indevido. No teste: 0 casos. |
-| Falso positivo de RISCO | Oscilação normal do fluxo disparando alerta | Ruído operacional. A persistência (2 de 5 medições) corta o pico isolado. |
+| Falso negativo de FALHA | FALHA real prevista como OK ou RISCO. **O erro mais grave.** | 488 de 1.434 (253 como OK, 235 como RISCO); recall de FALHA 0,6597 |
+| Falso negativo de RISCO | RISCO real previsto como OK | 2.097 de 4.236; recall de RISCO 0,4681 |
+| Falso positivo de FALHA | OK ou RISCO previsto como FALHA | 202 (46 OK, 156 RISCO); precisão de FALHA 0,8240 |
+| Falso positivo de RISCO | OK previsto como RISCO | 105 |
 
-A métrica principal é o **F1 macro**, com recall de FALHA e a confusão RISCO↔FALHA reportados à parte. A acurácia isolada é enganosa com 80,8% de OK. O teste é usado uma vez.
+A métrica de seleção é o **F1 macro** (igual à `METRICA_SELECAO` da professora). Recall de FALHA, fatia de transições e fatia de início de falha são reportados à parte. A acurácia (0,9285 no teste) não decide, porque 86% das linhas são OK.
 
 ---
 
-## 8. Abordagem proposta
+## 8. Abordagem
 
-Um único modelo treinado com muitos fluxos, cada um descrito pelo desvio em relação ao próprio baseline ("modelo RTT normalizado").
+Ingestão → Período A só para baseline → congelamento → variáveis relativas no Período B → rótulo → alvo t+1 → split temporal com embargo e fluxos não vistos → grade de três famílias escolhida na validação → teste único → ficha do modelo.
 
-Caminho seguido: ingestão do mesh (JSON bruto preservado) → Período A só para baseline → congelamento → métricas relativas no Período B → rótulo híbrido → corte temporal com folga e hold-out de fluxos → comparação com classe majoritária e persistência → árvore de decisão CART escolhida na validação → teste único → ficha da árvore.
+### 8.1 Baseline por fluxo (só Período A)
 
-### 8.1 O que a distância explica
-
-O RTT bruto mistura o comprimento do caminho com o incidente. O que classifica é o comportamento do RTT **daquele** fluxo, junto com perda e jitter, sustentados no tempo.
-
-Exemplos da nossa coleta que a árvore trata como OK quando estáveis:
-
-| Caminho | RTT normal observado (mediana do Período A) | Leitura |
-|---|---|---|
-| DE→DE (Mainz) | 9,88 ms (fluxo `6372\|217.198.242.227`) | Normal baixo |
-| BR→BR (Porto Alegre) | 11,9 a 23,3 ms (fluxos não vistos) | Normal do país |
-| Regional (BR→AR, BR→CL, DE→NL) | mediana de 36,29 ms | Normal intermediário |
-| BR→DE (Mainz) | 208,50 ms (fluxo `6410\|217.198.242.227`) | Normal transatlântico |
-| BR→JP (Tsuchiura) | 271,6 a 305,8 ms (fluxos não vistos) | Normal do fluxo. Nos fluxos não vistos, 100% das medições OK continuaram OK. |
-
-### 8.2 Baseline por fluxo
-
-Uma ficha por `fluxo_id`, calculada só no Período A e congelada (o notebook confere que ela não muda numa nova execução).
-
-| Passo | O que foi feito |
+| Campo | Cálculo |
 |---|---|
-| 1 | Separar o fluxo e ordenar pelo timestamp. |
-| 2 | Período A: 06/09/2026 04:32 até 13/09/2026 04:32 UTC. Período B: até 20/09/2026 04:32 UTC. Nenhum timestamp de um mesmo fluxo nos dois. |
-| 3 | RTT válido = RTT presente. Timeout fica fora da mediana e do MAD, mas dentro do dataset como evento. |
-| 4 | Piso de 1.500 RTT válidos no A. Resultado: os 64 fluxos passaram, todos com cerca de 2.500 RTT válidos. |
-| 5 | Gravar `baseline_por_fluxo.csv` e congelar. |
+| `n_amostras_A`, `n_rtt_validos_A` | execuções e RTT válidos no A |
+| `mediana_rtt_A`, `p95_rtt_A`, `p99_rtt_A` | mediana e percentis (interpolação linear) do RTT médio |
+| `mediana_jitter_A`, `p95_jitter_A`, `p99_jitter_A` | mesmo para o jitter |
+| `ttl_baseline` | mediana do TTL |
+| `status_baseline` | `VALIDO` se há pelo menos 30 RTT válidos |
 
-| Campo da ficha | Fórmula (só Período A) |
+Conferência com numpy: fluxo curto `7326_1526` (mediana 0,80 ms, P95 0,91, P99 1,05) e longo `6506_2581` (mediana 451,57 ms, P95 489,87, P99 656,78).
+
+### 8.2 Variáveis (21)
+
+| Grupo | Variáveis |
 |---|---|
-| `mediana` | mediana dos RTT válidos |
-| `MAD` | mediana(\|RTT − mediana\|) dos RTT válidos |
-| `IQR` | Q3 − Q1 dos RTT válidos (usado só quando MAD = 0) |
-| `jitter_tipico` | mediana do jitter nas medições com jitter presente |
-| `perda_tipica` | mediana de `perda_pct`, inclusive timeout |
-| `prop_resposta` | medições com RTT válido / medições do período |
+| Instantâneas (8) | `perda_pct`, `rtt_ausente`, `razao_rtt_p95`, `razao_rtt_p99`, `razao_jitter_p95`, `amplitude_rtt_rel`, `delta_ttl_clip` (±16), `ttl_reset` (\|ΔTTL\| ≥ 64) |
+| Janelas de 3, 6 e 12 medições (12) | `perda_media_wN`, `rtt_p95_max_wN`, `jitter_p95_max_wN`, `n_rtt_acima_p95_wN` |
+| Persistência (1) | `perdas_consecutivas` |
 
-Mediana por escopo (só auditoria): MAD de 0,08 ms nos curtos, 0,20 ms nos regionais e 0,87 ms nos longos. Nenhum fluxo teve MAD = 0 nem jitter típico = 0.
+As janelas usam só a medição atual e o passado do mesmo fluxo. Variáveis que dependem de RTT ausente recebem a sentinela −1 (sem imputar média nem mediana).
 
-O escore robusto é a versão estável da regra dos três sigmas: `z_robusto = (RTT − mediana) / (1,4826 × MAD)`.
+### 8.3 Regra de rotulagem (para na primeira verdadeira)
 
-### 8.3 Features
-
-Colunas da árvore final (dicionário v0.4):
-
-| Coluna | Cálculo |
-|---|---|
-| `z_robusto` | (RTT − mediana) / (1,4826 × MAD); vazio sem RTT |
-| `aumento_pct` | (RTT − mediana) / mediana × 100; vazio sem RTT |
-| `jitter_relativo` | jitter / jitter típico; vazio sem jitter |
-| `perda_pct` | (enviados − recebidos) / enviados × 100 |
-| `timeout_atual` | 1 se não há RTT ou perda = 100% |
-| `n5_timeout`, `n5_aumento80`, `n5_risco` | contagens nas últimas 5 medições do fluxo (persistência) |
-| `z_tendencia` | z atual − média do z nas 3 medições anteriores (tendência) |
-| `z_max5` | maior z nas últimas 5 |
-| `n5_jitter3` | quantas das últimas 5 têm `jitter_relativo` ≥ 3 |
-| `perda_media5` | média de `perda_pct` nas últimas 5 |
-
-País, IP, rota, `fluxo_id`, timestamp e RTT absoluto ficam fora. RTT ausente fica vazio, com `timeout_atual = 1`.
-
-### 8.4 Regra de rotulagem
-
-Parar na primeira linha verdadeira. FALHA ganha de RISCO, e RISCO ganha de OK.
-
-| Ordem | Classe | Condição | Medições no Período B |
+| Ordem | Condição | Classe | Medições no B |
 |---|---|---|---|
-| 1 | FALHA | `perda_pct` ≥ 10 | 236 |
-| 2 | FALHA | `n5_timeout` ≥ 3 | 0 |
-| 3 | FALHA | `z_robusto` ≥ 3,5 com RTT presente | 15.305 |
-| 4 | FALHA | `n5_aumento80` ≥ 2 | 60 |
-| 5 | RISCO | (2 ≤ z < 3,5, ou 30 ≤ aumento ≤ 80, ou jitter relativo ≥ 3) e `n5_risco` ≥ 2 | 15.249 |
-| 6 | OK | nenhuma anterior (pico isolado também é OK) | 130.031 |
+| 1 | perda ≥ 2 de 3 pacotes | FALHA | 2.450 |
+| 2 | RTT > P99 do fluxo | FALHA | 10.975 |
+| 3 | perda ≥ 1 de 3 pacotes | RISCO | 769 |
+| 4 | RTT > P95 do fluxo | RISCO | 17.778 |
+| 5 | jitter > P95 do fluxo | RISCO | 11.513 |
+| 6 | nenhuma | OK | 284.936 |
 
-Casos especiais aplicados como na tabela do projeto (MAD = 0, jitter típico = 0, jitter vazio, RTT ausente); nenhum deles ocorreu nesta coleta, exceto RTT e jitter vazios.
+**Mecanismo dominante:** 82% das FALHAs (10.975 de 13.425) vêm da latência acima do P99. Por construção, cerca de 5% e 1% das linhas de um fluxo estável ficam acima do P95 e do P99, então parte de RISCO e FALHA é ruído estatístico, não degradação percebida.
 
-**Mecanismo dominante:** 98% das FALHAs (15.305 de 15.601) vêm do desvio robusto. Como o MAD é de fração de milissegundo, variações pequenas já dão z ≥ 3,5. A regra 2 (timeout persistente) não disparou: só 227 timeouts em 322.016 medições, todos isolados.
+### 8.4 Modelo
 
-### 8.5 Mudança de rota
+Grade e desempate da etapa 8 da professora: maior macro-F1 na validação, depois menor gap treino−validação, depois a família e o modelo mais simples.
 
-O critério de RECALIBRAR (z alto, perda e jitter normais, por cerca de 1 hora) **não foi aplicado**. Uma troca estável de rota durante o Período B aparece hoje como FALHA pela regra 3. Isso está declarado nas limitações.
-
-### 8.6 Como o modelo deve ser lido
-
-A árvore não aprende que RTT alto é falha: com RTT e rota disponíveis, ela continuou escolhendo `z_robusto` na raiz e deu importância zero a eles. Para um fluxo nunca visto, o procedimento é de calibração: observar o período inicial, congelar a ficha e só então aplicar a árvore.
+| Família | Candidatos | Melhor na validação |
+|---|---|---|
+| Naive Bayes | 4 | `var_smoothing` 1e-3; macro-F1 0,5223 |
+| Árvore de decisão (CART) | 30 | `max_depth` 12, `min_samples_leaf` 100, sem `class_weight`; 220 folhas; macro-F1 0,7691; gap 0,0233 |
+| **Random Forest** (escolhido) | 24 | 200 árvores, `max_depth` None, `min_samples_leaf` 5, `max_features` sqrt; macro-F1 **0,7702**; gap 0,0521 |
 
 ---
 
 ## 9. Avaliação
 
-**Protocolo A — tempo.** Dentro do Período B, por fluxo e em ordem de tempo: treino 50% (13/09 04:32 → 16/09 16:32 UTC, 70.560 medições), validação 20% (→ 18/09 02:08, 27.953) e teste 30% (→ 20/09 04:32, 41.812). As 4 primeiras medições de cada fluxo na validação e no teste ficam numa **folga** (448 medições), para nenhuma janela de 5 usar o bloco anterior. Todos os blocos têm RISCO. Hiperparâmetros escolhidos só na validação; o teste foi aberto uma vez (07/10/2026 18:25 UTC, `teste_unico.json`).
+**Protocolo A — tempo.** A partir da primeira medição do Período B (t0 ≈ 28/09/2026 18:00 UTC): treino até t0 + 5 dias; validação de t0 + 5 dias + 60 min até t0 + 6 dias; teste de t0 + 6 dias + 60 min até o fim do B. O embargo de 60 min tirou 3.511 linhas.
 
-**Protocolo B — fluxos novos.** Grupos inteiros de `fluxo_id`, separados antes de qualquer árvore: todos os fluxos para **Tsuchiura (BR→JP, longo)** e **Porto Alegre (BR→BR, curto)**, 8 fluxos e 20.108 medições. A escolha foi fixada pelo grupo (não sorteada) para garantir caminho curto e longo e o hold-out de BR→JP. A ficha de cada um vem só do Período A dele.
+| Bloco | Linhas | Fluxos | OK | RISCO | FALHA |
+|---|---|---|---|---|---|
+| Treino | 211.040 | 118 | 182.357 | 18.732 | 9.951 |
+| Validação | 40.651 | 118 | 35.530 | 3.594 | 1.527 |
+| Teste | 40.453 | 118 | 34.783 | 4.236 | 1.434 |
+| Não vistos | 32.624 | 13 | 29.200 | 3.157 | 267 |
+
+**Protocolo B — fluxos novos.** 10% dos fluxos (13) sorteados com a SEED antes de qualquer treino, fora de treino, validação e teste, cada um com o próprio baseline do Período A.
 
 **Resultados:**
 
-| Avaliação | F1 macro | Recall de FALHA | Observação |
+| Avaliação | F1 macro | Recall FALHA | Observação |
 |---|---|---|---|
-| Validação (árvore T3 e T4) | 0,9998 | 0,9994 | Só 2 erros: FALHA → RISCO |
-| Teste temporal (árvore final) | 0,9997 | 0,999 | Balanced accuracy 0,9996; matriz [[33.159, 0, 0], [0, 4.996, 0], [2, 2, 3.653]] |
-| Classe majoritária ("sempre OK") no teste | 0,2949 | 0,000 | A árvore supera |
-| Fluxos não vistos | 0,9997 | 0,999 | Longo estável: 100% OK mantidos; curto degradado: 100% marcado RISCO/FALHA |
-| Preditor +12 min (árvore) | 0,5149 | 0,252 | — |
-| Persistência ("repetir a classe atual") | 0,5409 | 0,400 | Supera a árvore: o entregável é um **detector** |
+| Persistência (validação) | 0,7261 | 0,7341 | Referência |
+| Árvore T3 (validação) | 0,7691 | 0,7046 | — |
+| Random Forest T4 (validação) | 0,7702 | 0,7073 | Escolhido |
+| **Teste — modelo final** | **0,7675** | **0,6597** | Balanced accuracy 0,7078 |
+| Teste — persistência | 0,7302 | — | Modelo +0,0373 |
+| Teste — classe majoritária (OK) | 0,3082 | 0 | — |
+| Teste — transições (classe muda) | 0,2344 | — | — |
+| Teste — início de FALHA (411 casos) | — | 0,0195 | Quase nada antecipado |
+| Não vistos — modelo | 0,6275 | 0,2659 | Persistência 0,6207 |
+
+Nos fluxos não vistos, por faixa de distância: na **curta**, 0 de 270 degradações foram detectadas; na média, 108 de 914; na longa, 1.347 de 2.240.
 
 ---
 
 ## 10. Riscos e limitações
 
-- **Rótulos heurísticos.** A árvore aprende a política de rótulo (concordância de 99,99% no teste), não uma falha confirmada em log de roteador.
-- **MAD muito pequeno.** Variações de fração de milissegundo disparam FALHA; o rótulo mede sensibilidade estatística, não necessariamente degradação percebida.
-- **Jitter típico de cerca de 0,1 ms.** Rajadas de 3 pacotes estimam mal o jitter; 0,3 ms já marca o critério de RISCO.
-- **Timeout persistente e perda são raros.** A regra 2 não disparou e só 236 medições têm perda ≥ 10%. O erro relevante do teste foi uma perda de 33% prevista como OK (`6349|103.202.216.76`, BR→JP, 19/09 03:03 UTC).
-- **Baseline fixo** não acompanha deriva lenta nem troca de rota; RECALIBRAR não foi implementado.
-- **Anchors não são a rede do campus.** Perda e jitter de último quilômetro ficam sub-representados.
-- **Fluxos não independentes.** Os mesmos 11 probes de origem servem vários destinos; amostras a cada 4 minutos são autocorrelacionadas.
-- **Lacunas na coleta.** 399 intervalos maiores que 360 s no Período B; as janelas de 5 contam linhas, não minutos.
-- **Sete mais sete dias** cobrem um ciclo semanal em cada período, não a estabilidade entre semanas.
-- **Dois destinos trocados.** Tostado e Nuremberg ficaram sem resposta nos 14 dias e foram substituídos; a versão anterior está preservada em `config/tabela_desenho_v1_descartada.csv`.
+- **Rótulos são uma política, não um defeito confirmado.** A classe é relativa ao P95/P99 do próprio fluxo. Em um fluxo estável, cerca de 5% das linhas ultrapassam o P95 por definição.
+- **O modelo não antecipa falhas.** Recall de 0,0195 nos inícios de FALHA; 87% dos erros da validação acontecem quando a classe muda.
+- **Generalização fraca em caminhos curtos.** Nos fluxos não vistos, nenhuma degradação da faixa curta foi detectada.
+- **Todas as sondas de origem são âncoras.** As medições mesh só têm âncoras como participantes, então a preferência por sonda comum (`MIN_PROBES_COMUNS = 1`) nunca teve efeito. Último quilômetro e redes de acesso ficam de fora.
+- **3 pacotes por execução:** a perda só assume 0, 33, 67 ou 100%, e o jitter é estimado com no máximo 3 valores.
+- **Baseline fixo** não acompanha deriva lenta.
+- **Teste curto:** um único bloco de cerca de 1 dia.
+- **Fluxos não independentes:** a mesma sonda serve vários destinos, e amostras a cada 4 min são autocorrelacionadas.
+- **Cobertura:** 19 fluxos e 2 destinos ficaram fora.
+- **Modelo final não é interpretável por regras** (Random Forest). Ver pendência no topo.
 
 ---
 
@@ -236,12 +209,12 @@ A árvore não aprende que RTT alto é falha: com RTT e rota disponíveis, ela c
 
 | # | Critério | Situação |
 |---|---|---|
-| 1 | Nenhum fluxo de teste contribui para o próprio baseline, e nenhuma feature usa país, IP ou rota | **Atendido.** Ficha só do Período A; colunas só relativas. |
-| 2 | Detector com F1 macro acima da classe majoritária, recall de FALHA explícito | **Atendido.** 0,9997 contra 0,2949; recall de FALHA 0,999. |
-| 3 | Preditor de 12 minutos supera a persistência | **Não atendido** (0,5149 contra 0,5409). A entrega se declara **detector**. |
-| 4 | Fluxos novos: longo estável não colapsa em FALHA; curto degradado não colapsa em OK | **Atendido.** 100% e 100%. |
-| 5 | Exemplos auditáveis | BR→JP estável como OK ✔; fluxo curto (DE→DE) como FALHA ✔; timeout persistente: não ocorreu nos dados; RECALIBRAR: não ativo. |
-| 6 | Ficha e dicionário alinhados às colunas do modelo | **Atendido.** Ficha da árvore e dicionário v0.4 com as 12 colunas da árvore final. |
+| 1 | Baseline só do Período A; nenhuma variável usa país, IP, rota ou RTT absoluto | **Atendido** (conferido por código na 5.1) |
+| 2 | F1 macro acima da classe majoritária, com recall de FALHA explícito | **Atendido:** 0,7675 contra 0,3082; recall de FALHA 0,6597 |
+| 3 | Modelo supera a persistência | **Atendido no geral** (+0,0373), **não atendido nos inícios de FALHA** (recall 0,0195) |
+| 4 | Fluxos novos com baseline próprio | **Parcial:** F1 0,6275 contra 0,6207; faixa curta sem detecção |
+| 5 | Teste aberto uma vez | **Ver seção 15** (houve mais de uma abertura entre a v1 e a v3) |
+| 6 | Equivalência com o pipeline da professora | **Atendido:** 123 de 123 verificações idênticas (`config/teste_equivalencia_professora.csv`) |
 
 ---
 
@@ -249,25 +222,24 @@ A árvore não aprende que RTT alto é falha: com RTT e rota disponíveis, ela c
 
 | Alternativa | Por que foi rejeitada |
 |---|---|
-| Limiar global de RTT (50/100 ms) | A classe vira distância: 77,4% das medições acima de 100 ms são OK no critério relativo. |
-| Árvore com RTT absoluto e rota | Testada como contraste na Tarefa 3: aprendeu um corte fixo de 141,2 ms e caiu para F1 macro 0,557. Descartada. |
-| Um modelo por fluxo | Caro em dados e manutenção; não serve para fluxos novos. |
-| Média e desvio-padrão no baseline | Os picos que se quer detectar inflam a média e o desvio. Mediana e MAD preservam a escala (fator 1,4826). |
-| Jitter e perda absolutos | Reintroduzem a distância; perda de 0,5% não é observável em 3 pacotes. |
-| Preencher timeout com 0 ms | 0 ms parece latência excelente e polui a mediana. |
-| Split aleatório de linhas | Janelas vizinhas do mesmo fluxo cairiam em treino e teste. Usamos corte temporal com folga. |
-| Superamostrar rotas longas para "balancear" FALHA | Ensinaria o mapa; rota longa estável é justamente o OK que o modelo precisa ver. |
-| Medições próprias no RIPE Atlas | Custam crédito e geram série curta. |
+| Limiar global de RTT | A classe vira distância. |
+| Árvore com RTT absoluto e rota | Contraste da Tarefa 3: F1 macro 0,5279, contra 0,7691 da árvore oficial. Descartada. |
+| Mediana/MAD/z-robusto e piso de 1.500 RTT (versão 1) | Substituídos pelo baseline P95/P99 e pelo mínimo de 30 do pipeline de referência (correções C09 e C10). |
+| Alvo = classe atual (versão 1) | O modelo apenas reproduzia a regra (F1 0,9997). Substituído pelo alvo t+1 (C01, C11). |
+| Trocar destinos sem resposta depois de coletar (versão 1) | Substituído por exclusão registrada por cobertura (C08). |
+| Split 50/20/30 por fração (versão 1) | Substituído por cortes nos dias 5 e 6 com embargo (C11). |
+| `class_weight` balanced | Subiu o recall de RISCO (0,42 → 0,57) e de FALHA (0,70 → 0,76), mas derrubou o F1 macro para 0,6828. Fica como opção se a operação priorizar recall. |
+| Split aleatório | Vazaria janelas do mesmo fluxo entre treino e teste. |
 
 ---
 
 ## 13. Perguntas em aberto
 
-1. **RECALIBRAR.** Não entrou na re-rotulagem do Período B; o treino usou as três classes e o viés de mudança de rota está declarado. Fica para uma próxima versão.
-2. **Limiares do rótulo** (z = 2 e 3,5; aumento de 30% e 80%; jitter relativo ≥ 3; perda ≥ 10%). Foram mantidos. Dado o MAD sub-milissegundo, vale avaliar na validação um piso para o denominador do z.
-3. **Baseline móvel causal** substitui a ficha fixa quando houver série maior que 7 + 7 dias.
-4. **Classificador.** Árvore de decisão CART (Gini, profundidade 5, 11 folhas, semente 42), escolhida na validação, como pede a disciplina.
-5. **Preditor.** A 12 minutos o futuro ainda é, em grande parte, o estado atual; um horizonte diferente ou novas colunas de tendência podem ser testados.
+1. **Modelo entregue:** Random Forest (regra de seleção da professora) ou árvore (roteiro das tarefas)? Ver pendência no topo.
+2. **Antecipação:** variáveis de tendência ou horizonte maior podem melhorar o recall nos inícios de FALHA.
+3. **Ruído do rótulo:** exigir persistência (por exemplo, 2 de 3 medições acima do P95) antes de marcar RISCO.
+4. **Caminhos curtos:** investigar por que nenhuma degradação curta dos fluxos não vistos foi detectada.
+5. **Baseline móvel** quando houver série maior que 7 + 7 dias.
 
 ---
 
@@ -275,10 +247,11 @@ A árvore não aprende que RTT alto é falha: com RTT e rota disponíveis, ela c
 
 | Etapa | Produz | A etapa seguinte usa |
 |---|---|---|
-| Coleta (Tarefa 1) | `data/raw/` (JSON bruto), `config/` (`parametros.json`, `tabela_desenho.csv`), `bruto_tabela.csv`, dicionário v0.1 | Este bruto |
-| Baseline e rótulo (Tarefa 2) | `baseline_por_fluxo.csv`, `periodo_B_rotulado.csv`, `corte_temporal.json`, dicionário v0.2 | Estes rótulos, estas métricas e este corte |
-| Primeira árvore (Tarefa 3) | `arvore_T3.joblib`, `regras_T3.txt`, árvore de contraste descartada | Os erros da validação |
-| Ajuste (Tarefa 4) | `arvore_T4.joblib`, tabela T3 → T4, dicionário v0.3 | Esta árvore |
-| Árvore final (Tarefa 5) | `arvore_final.json`, `teste_unico.json`, ficha da árvore, dicionário v0.4 | — |
+| Coleta (Tarefa 1) | `data/raw/` (420 JSON), `config/` (âncoras, medições, `tabela_desenho.csv`, `relatorio_qualidade_fluxos.csv`, `exclusoes_fluxos.csv`, `fluxos_modelagem.csv`, `parametros.json`), `data/interim/bruto_tabela.csv` | Este bruto |
+| Baseline e rótulo (Tarefa 2) | `baseline_por_fluxo.csv`, `dataset_final.csv`, `corte_temporal.json` | Estes rótulos e este corte |
+| Primeira árvore (Tarefa 3) | `modelos/arvore_T3.joblib` | Os erros da validação |
+| Ajuste (Tarefa 4) | `modelos/modelo_T4.joblib`, `grade_busca.csv`, `tabela_T3_T4.csv` | Este modelo |
+| Modelo final (Tarefa 5) | `modelo_final_congelado.json`, `teste_unico.json`, `ficha_do_modelo.json`, `requirements.txt` | — |
 
-Não se rotula o período que estimou o baseline. Não se sorteia linha para o teste final.
+Não se rotula o período que estimou o baseline. Não se sorteia linha para o teste.
+
