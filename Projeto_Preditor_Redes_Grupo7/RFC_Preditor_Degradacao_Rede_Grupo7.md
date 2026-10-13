@@ -2,12 +2,9 @@
 
 **Equipe:** Grupo 7 — Isaac William Braz, Fernanda Akemi Martins Sanpei, Geziel de Andrade, Hendrick Ambriola, Davi Gabriel Borges dos Santos, Victor Gabriel Alves  
 **Repositório GitHub:** https://github.com/GzTop1/Redes-Projeto  
-**Notebook de referência:** 
-**Versão:** 2.0 (substitui a v1, de 07/10/2026; ver seção 15)
+**Notebook de referência:** `Projeto_Preditor_Falhas_PPF_corrigido_v3.ipynb` (todos os números deste documento vêm da execução de 11/10/2026)
 
-> Um RFC formaliza o problema, o contrato dos dados e o critério de decisão antes de se investir no classificador. Esta versão segue o pipeline de referência da professora (`preditor_redes-main`, etapas 1 a 8). A etapa 9 (monitoramento) e a pasta `producao/` não fazem parte do trabalho.
-
-> **Pendência de decisão (confirmar com a professora):** os roteiros das Tarefas 3 e 4 pedem uma árvore de decisão e vetam outros algoritmos. O pipeline de referência (etapa 8) compara Naive Bayes, árvore e Random Forest e escolhe o melhor na validação. A execução v3 escolheu o Random Forest, com ganho de +0,0011 em macro-F1 sobre a árvore. Se a orientação for manter a árvore, o modelo entregue passa a ser a árvore da Tarefa 3, e o teste precisa ser registrado como nova abertura.
+> Um RFC formaliza o problema, o contrato dos dados e o critério de decisão antes de se investir no classificador. O projeto segue o pipeline de referência da professora (`preditor_redes-main`, etapas 1 a 8). A etapa 9 (monitoramento) e a pasta `producao/` não fazem parte do trabalho.
 
 ---
 
@@ -201,7 +198,7 @@ Nos fluxos não vistos, por faixa de distância: na **curta**, 0 de 270 degrada�
 - **Teste curto:** um único bloco de cerca de 1 dia.
 - **Fluxos não independentes:** a mesma sonda serve vários destinos, e amostras a cada 4 min são autocorrelacionadas.
 - **Cobertura:** 19 fluxos e 2 destinos ficaram fora.
-- **Modelo final não é interpretável por regras** (Random Forest). Ver pendência no topo.
+- **Modelo final não é interpretável por regras** (Random Forest). As regras legíveis são as da árvore da Tarefa 3, com F1 macro de validação 0,7691.
 
 ---
 
@@ -213,7 +210,7 @@ Nos fluxos não vistos, por faixa de distância: na **curta**, 0 de 270 degrada�
 | 2 | F1 macro acima da classe majoritária, com recall de FALHA explícito | **Atendido:** 0,7675 contra 0,3082; recall de FALHA 0,6597 |
 | 3 | Modelo supera a persistência | **Atendido no geral** (+0,0373), **não atendido nos inícios de FALHA** (recall 0,0195) |
 | 4 | Fluxos novos com baseline próprio | **Parcial:** F1 0,6275 contra 0,6207; faixa curta sem detecção |
-| 5 | Teste aberto uma vez | **Ver seção 15** (houve mais de uma abertura entre a v1 e a v3) |
+| 5 | Teste aberto uma vez | **Atendido:** `teste_unico.json` (11/10/2026 14:35 UTC); as execuções seguintes só leem o arquivo |
 | 6 | Equivalência com o pipeline da professora | **Atendido:** 123 de 123 verificações idênticas (`config/teste_equivalencia_professora.csv`) |
 
 ---
@@ -224,10 +221,10 @@ Nos fluxos não vistos, por faixa de distância: na **curta**, 0 de 270 degrada�
 |---|---|
 | Limiar global de RTT | A classe vira distância. |
 | Árvore com RTT absoluto e rota | Contraste da Tarefa 3: F1 macro 0,5279, contra 0,7691 da árvore oficial. Descartada. |
-| Mediana/MAD/z-robusto e piso de 1.500 RTT (versão 1) | Substituídos pelo baseline P95/P99 e pelo mínimo de 30 do pipeline de referência (correções C09 e C10). |
-| Alvo = classe atual (versão 1) | O modelo apenas reproduzia a regra (F1 0,9997). Substituído pelo alvo t+1 (C01, C11). |
-| Trocar destinos sem resposta depois de coletar (versão 1) | Substituído por exclusão registrada por cobertura (C08). |
-| Split 50/20/30 por fração (versão 1) | Substituído por cortes nos dias 5 e 6 com embargo (C11). |
+| Mediana/MAD/z-robusto e piso de 1.500 RTT | Com MAD de fração de milissegundo, variações mínimas viram FALHA. Adotados o baseline P95/P99 e o mínimo de 30 RTT do pipeline de referência. |
+| Alvo = classe atual | O modelo apenas reproduziria a regra de rótulo. O alvo t+1 mede previsão de fato. |
+| Trocar destinos sem resposta depois de coletar | Introduz viés de seleção. Adotada a exclusão registrada por cobertura mínima de 80%. |
+| Split 50/20/30 por fração | Cortes fixos nos dias 5 e 6 com embargo de 60 min evitam que janelas do mesmo fluxo cruzem blocos. |
 | `class_weight` balanced | Subiu o recall de RISCO (0,42 → 0,57) e de FALHA (0,70 → 0,76), mas derrubou o F1 macro para 0,6828. Fica como opção se a operação priorizar recall. |
 | Split aleatório | Vazaria janelas do mesmo fluxo entre treino e teste. |
 
@@ -235,7 +232,7 @@ Nos fluxos não vistos, por faixa de distância: na **curta**, 0 de 270 degrada�
 
 ## 13. Perguntas em aberto
 
-1. **Modelo entregue:** Random Forest (regra de seleção da professora) ou árvore (roteiro das tarefas)? Ver pendência no topo.
+1. **Modelo entregue:** o Random Forest venceu a árvore por apenas +0,0011 de F1 macro na validação; a árvore é a alternativa interpretável.
 2. **Antecipação:** variáveis de tendência ou horizonte maior podem melhorar o recall nos inícios de FALHA.
 3. **Ruído do rótulo:** exigir persistência (por exemplo, 2 de 3 medições acima do P95) antes de marcar RISCO.
 4. **Caminhos curtos:** investigar por que nenhuma degradação curta dos fluxos não vistos foi detectada.
@@ -254,4 +251,3 @@ Nos fluxos não vistos, por faixa de distância: na **curta**, 0 de 270 degrada�
 | Modelo final (Tarefa 5) | `modelo_final_congelado.json`, `teste_unico.json`, `ficha_do_modelo.json`, `requirements.txt` | — |
 
 Não se rotula o período que estimou o baseline. Não se sorteia linha para o teste.
-
