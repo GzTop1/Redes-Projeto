@@ -4,7 +4,7 @@
 **Repositório GitHub:** https://github.com/GzTop1/Redes-Projeto  
 **Notebook de referência:** https://github.com/GzTop1/Redes-Projeto/blob/main/Projeto_Preditor_Redes_Grupo7/Projeto_Preditor_Falhas_PPF.ipynb
 
-> Um RFC formaliza o problema, o contrato dos dados e o critério de decisão antes de se investir no classificador. O projeto segue o pipeline de referência da professora (`preditor_redes-main`, etapas 1 a 8). A etapa 9 (monitoramento) e a pasta `producao/` não fazem parte do trabalho.
+> Um RFC formaliza o problema, o contrato dos dados e o critério de decisão antes de se investir no classificador. O projeto segue o pipeline de referência da professora (`preditor_redes`, etapas 1 a 8). Este documento cobre essas oito etapas. A etapa 9 (monitoramento ao vivo) e a pasta `producao/` ficam fora deste RFC; a forma do painel ao vivo está em aberto (seção 13).
 
 ---
 
@@ -38,7 +38,7 @@ O usuário do alerta é quem opera o enlace: investigar (FALHA), observar (RISCO
 | Pergunta | Resposta do grupo |
 |---|---|
 | Qual evento será previsto? | A **classe da próxima medição** de ping de um fluxo: OK, RISCO ou FALHA. |
-| Como a classe é definida? | Regra por fluxo, na ordem da seção 8.4: perda e RTT/jitter comparados ao P95/P99 do próprio fluxo no Período A. |
+| Como a classe é definida? | Regra por fluxo, na ordem da seção 8.3: perda e RTT/jitter comparados ao P95/P99 do próprio fluxo no Período A. |
 | Qual é o horizonte? | Uma medição à frente (240 s), só se o intervalo até ela for de no máximo 600 s. |
 | Qual é a unidade de análise? | Uma execução de ping (3 pacotes) de um fluxo, com as janelas de 3, 6 e 12 medições anteriores do mesmo fluxo. |
 | O que é um fluxo? | `id_fluxo = {probe_id}_{anchor_id}` (exemplo: `6411_1070`). |
@@ -60,7 +60,7 @@ O usuário do alerta é quem opera o enlace: investigar (FALHA), observar (RISCO
 | Período | Período A (baseline): 21/09/2026 18:00 a 28/09/2026 18:00 UTC. Período B (dataset): 28/09/2026 18:00 a 05/10/2026 18:00 UTC. Janelas em hora cheia, sem sobreposição. Os resultados foram baixados em 11/10/2026 do endpoint histórico `/results/`. |
 | Cobertura | Um fluxo só entra em um período com pelo menos 80% das 2.520 execuções esperadas (2.016) e, no A, com pelo menos 30 TTL válidos. Só fluxos **A+B** seguem para o modelo: **131 de 150**. |
 | Dentro do escopo | `GET` público; JSON bruto preservado; baseline congelado; variáveis relativas; rótulo por regra; split temporal com embargo; fluxos não vistos sorteados antes do treino; comparação com persistência e classe majoritária; ficha do modelo; teste de equivalência com o código da professora. |
-| Fora de escopo | `POST` e créditos do RIPE Atlas. IPv6, traceroute, HTTP. Limiar global de RTT. País, IP, rota ou `id_fluxo` como variável. Trocar destinos depois de coletar. RTT ausente gravado como 0. Split aleatório. Etapa 9 (monitoramento). |
+| Fora de escopo | `POST` e créditos do RIPE Atlas. IPv6, traceroute, HTTP. Limiar global de RTT. País, IP, rota ou `id_fluxo` como variável. Trocar destinos depois de coletar. RTT ausente gravado como 0. Split aleatório. Etapa 9 (monitoramento ao vivo), tratada à parte. |
 
 ---
 
@@ -154,6 +154,8 @@ Grade e desempate da etapa 8 da professora: maior macro-F1 na validação, depoi
 | Árvore de decisão (CART) | 30 | `max_depth` 12, `min_samples_leaf` 100, sem `class_weight`; 220 folhas; macro-F1 0,7691; gap 0,0233 |
 | **Random Forest** (escolhido) | 24 | 200 árvores, `max_depth` None, `min_samples_leaf` 5, `max_features` sqrt; macro-F1 **0,7702**; gap 0,0521 |
 
+A escolha coincide com o modelo de referência da professora (`rf_v1.0.0`): mesma família e mesmos hiperparâmetros.
+
 ---
 
 ## 9. Avaliação
@@ -185,6 +187,21 @@ Grade e desempate da etapa 8 da professora: maior macro-F1 na validação, depoi
 
 Nos fluxos não vistos, por faixa de distância: na **curta**, 0 de 270 degradações foram detectadas; na média, 108 de 914; na longa, 1.347 de 2.240.
 
+### 9.1 Comparação com o modelo de referência
+
+O pipeline da professora (`preditor_redes`) usa o mesmo código e a mesma família de modelo, sobre outra amostra de âncoras e sondas e nas mesmas janelas A e B.
+
+| Indicador | Referência (`rf_v1.0.0`) | Grupo 7 |
+|---|---|---|
+| Fluxos com baseline válido | 137 | 131 |
+| Macro-F1 na validação | 0,767 | 0,7702 |
+| Macro-F1 no teste | 0,755 | 0,7675 |
+| Persistência no teste | 0,711 | 0,7302 |
+| Recall de FALHA no teste | 0,695 | 0,6597 |
+| Recall no início de FALHA (teste) | 0,146 (66 de 452) | 0,0195 (8 de 411) |
+
+Os indicadores gerais são próximos. A diferença está na antecipação de falhas. Como o código é equivalente (seção 11, critério 6), a hipótese é que ela venha dos dados: os fluxos sorteados não são os mesmos, e na referência uma única âncora concentra 16,8% das falhas do teste.
+
 ---
 
 ## 10. Riscos e limitações
@@ -198,7 +215,7 @@ Nos fluxos não vistos, por faixa de distância: na **curta**, 0 de 270 degrada�
 - **Teste curto:** um único bloco de cerca de 1 dia.
 - **Fluxos não independentes:** a mesma sonda serve vários destinos, e amostras a cada 4 min são autocorrelacionadas.
 - **Cobertura:** 19 fluxos e 2 destinos ficaram fora.
-- **Modelo final não é interpretável por regras** (Random Forest). As regras legíveis são as da árvore da Tarefa 3, com F1 macro de validação 0,7691.
+- **Modelo final não é interpretável por regras** (Random Forest, como na referência). As regras legíveis são as da árvore da Tarefa 3, com F1 macro de validação 0,7691.
 
 ---
 
@@ -232,11 +249,12 @@ Nos fluxos não vistos, por faixa de distância: na **curta**, 0 de 270 degrada�
 
 ## 13. Perguntas em aberto
 
-1. **Modelo entregue:** o Random Forest venceu a árvore por apenas +0,0011 de F1 macro na validação; a árvore é a alternativa interpretável.
-2. **Antecipação:** variáveis de tendência ou horizonte maior podem melhorar o recall nos inícios de FALHA.
-3. **Ruído do rótulo:** exigir persistência (por exemplo, 2 de 3 medições acima do P95) antes de marcar RISCO.
-4. **Caminhos curtos:** investigar por que nenhuma degradação curta dos fluxos não vistos foi detectada.
-5. **Baseline móvel** quando houver série maior que 7 + 7 dias.
+1. **Modelo entregue:** o Random Forest venceu a árvore por apenas +0,0011 de F1 macro na validação e coincide com o modelo de referência; a árvore é a alternativa interpretável.
+2. **Etapa 9 (monitoramento ao vivo):** confirmar com os professores se o painel segue o da referência (malha pública do RIPE Atlas, API local) e se deve incluir o modo de simulação de eventos pedido no documento interdisciplinar.
+3. **Antecipação:** variáveis de tendência ou horizonte maior podem melhorar o recall nos inícios de FALHA (0,0195 no grupo contra 0,146 na referência).
+4. **Ruído do rótulo:** exigir persistência (por exemplo, 2 de 3 medições acima do P95) antes de marcar RISCO.
+5. **Caminhos curtos:** investigar por que nenhuma degradação curta dos fluxos não vistos foi detectada.
+6. **Baseline móvel** quando houver série maior que 7 + 7 dias.
 
 ---
 
