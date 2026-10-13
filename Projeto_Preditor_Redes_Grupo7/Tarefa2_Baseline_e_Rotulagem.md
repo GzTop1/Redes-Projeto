@@ -7,9 +7,7 @@
 **Scrum Master da tarefa:** Davi Gabriel Borges dos Santos  
 **Repositório GitHub:** https://github.com/GzTop1/Redes-Projeto
 
-> Esta tarefa lê o `data/raw/` da Tarefa 1. A árvore não entra aqui. País, IP e rota não entram na tabela que o modelo vai ler.
-
-> O trabalho é **obter o baseline de cada fluxo e rotular o Período B** com a tabela desta página. A árvore não entra aqui. País, IP e rota não entram na tabela que a árvore vai ler.
+> Esta tarefa lê o `data/raw/` da Tarefa 1. O trabalho é **obter o baseline de cada fluxo e rotular o Período B** com a tabela desta página. A árvore não entra aqui. País, IP e rota não entram na tabela que o modelo vai ler.
 >
 > Ordem obrigatória: inspeção do bruto → ficha de baseline no Período A → métricas relativas no Período B → rótulo na ordem da tabela → só então o recorte temporal dentro de B.
 
@@ -56,6 +54,8 @@ Uma ficha por `id_fluxo`, só com o Período A. O Período B não entra na conta
 | 3     | RTT válido = RTT presente. Timeout fica fora dos percentis e dentro do dataset como evento. |
 | 4     | Menos de **30** RTT válidos no A: `status_baseline = INSUFICIENTE`, sem classe. |
 | 5     | Gravar `baseline_por_fluxo.csv` e congelar (uma nova execução exige resultado idêntico). |
+
+**Mínimo de 30 RTT válidos em vez do piso de 1.500.** A rubrica desta tarefa cita um piso de 1.500 RTT válidos, mas o grupo adotou o mínimo de **30**, que é o valor do pipeline de referência da professora (`pipeline/06_baseline/src/config.py`: `MIN_AMOSTRAS_BASELINE = 30`; percentis `(95, 99)`). A troca acompanha a mudança do baseline de mediana/MAD para P95/P99 (correção C09 do notebook). O piso de 1.500 também fica coberto na prática pela regra de cobertura da Tarefa 1: um fluxo só chega aqui com pelo menos 2.016 execuções no Período A (80% de 2.520). A contagem de RTT válidos de cada fluxo está na coluna `n_rtt_validos_A` de `baseline_por_fluxo.csv`.
 
 | Campo da ficha  | Fórmula, somente Período A |
 | --------------- | -------------------------- |
