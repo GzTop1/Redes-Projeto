@@ -1,66 +1,64 @@
 # Diário da Tarefa 3 — Primeira árvore de decisão
 
 **Período:** 28/09/2026 a 04/10/2026  
-**Projeto:** Preditor de degradação de rede com RTT normalizado (independente da rota)
+**Projeto:** Preditor de degradação de rede relativo ao baseline do fluxo (independente da rota)
 
 **Equipe:** Grupo 7  
 **Scrum Master da tarefa:** Fernanda Akemi Martins Sanpei  
 **Repositório GitHub:** https://github.com/GzTop1/Redes-Projeto
-
+>
 > Tarefa 1 coletou. Tarefa 2 fez o baseline e o rótulo. Esta tarefa **não refaz** a ficha nem a tabela de classes.
 >
-> O modelo é uma **árvore de decisão**. O entregável é a árvore: atributos de cada divisão, profundidade, folhas e as regras lidas em português. Não é um desfile de algoritmos.
->
-> A árvore oficial usa só métricas relativas ao baseline do fluxo. Uma segunda árvore, de contraste, pode ver a rota ou o RTT absoluto — só para mostrar que ela aprende distância. Essa árvore de contraste **não** é o modelo do projeto.
+> O modelo é uma **árvore de decisão**. A árvore oficial usa só variáveis relativas ao baseline do fluxo. A árvore de contraste vê o RTT absoluto e a rota, só para mostrar que aprende distância, e **não** é o modelo do projeto.
 
 ### Contrato desta tarefa
 
 | | Artefato | Origem / destino |
 |---|---|---|
 | **Entra** | Ficha de baseline, dataset rotulado, corte temporal | Tarefa 2 — **os mesmos** |
-| **Sai** | Árvore treinada só no treino, com profundidade e critério registrados | Tarefa 4 mexe nesta árvore, não no rótulo |
-| **Sai** | Regras da árvore em texto e matriz 3×3 (OK, RISCO, FALHA) | Tarefa 4, para atacar o erro |
-| **Sai** | Árvore de contraste (com rota ou RTT absoluto) e a frase do que ela aprendeu | Prova de que o modelo oficial não segue esse atalho |
+| **Sai** | Árvore treinada só no treino (`modelos/arvore_T3.joblib`) | Tarefa 4 |
+| **Sai** | Regras da árvore em texto e matriz 3×3 | Tarefa 4, para atacar o erro |
+| **Sai** | Árvore de contraste e a frase do que ela aprendeu | Prova de que o modelo oficial não segue esse atalho |
 
-**Não sai daqui:** troca de algoritmo (floresta, boosting, redes), limiar fino, model card.
+**Não sai daqui:** troca de algoritmo, limiar fino, model card.
 
-- [x] Treino, validação e teste são os da Tarefa 2 (70.560 / 27.953 / 41.812 medições, conferidos contra `corte_temporal.json`)
-- [x] A ficha de baseline não foi recalculada com o Período B (lida de `baseline_por_fluxo.csv`, gravada em 07/10/2026 18:21:42 UTC)
+- [x] Treino e validação são os da Tarefa 2 (211.040 / 40.651 linhas, lidos de `dataset_final.csv`); o teste continua fechado
+- [x] A ficha de baseline não foi recalculada com o Período B (lida de `baseline_por_fluxo.csv`, congelada)
 
 ---
 
 ## 1. Colunas que a árvore oficial pode usar
 
-Entram: `z_robusto`, `aumento_pct`, `jitter_relativo`, `perda_pct`, `timeout_atual`, `n5_timeout`, `n5_aumento80`, `n5_risco`.
+**Entram (21):** `perda_pct`, `rtt_ausente`, `razao_rtt_p95`, `razao_rtt_p99`, `razao_jitter_p95`, `amplitude_rtt_rel`, `delta_ttl_clip`, `ttl_reset`, `perda_media_w3`, `rtt_p95_max_w3`, `jitter_p95_max_w3`, `n_rtt_acima_p95_w3`, as mesmas quatro para `w6` e `w12`, e `perdas_consecutivas`.
 
-Não entram: país, IP, `rota_id`, `fluxo_id`, nome do destino, RTT em milissegundos no lugar das métricas relativas.
+**Não entram:** país, IP, rota, `id_fluxo`, `anchor_id`, `probe_id`, timestamp, RTT absoluto, TTL bruto, percentis do baseline e a **classe atual**.
 
 - [x] Lista de colunas do treino colada no diário
-- [x] Conferido que a classe (`OK` / `RISCO` / `FALHA`) é o alvo, não uma feature
-
-**Colunas usadas:** `z_robusto`, `aumento_pct`, `jitter_relativo`, `perda_pct`, `timeout_atual`, `n5_timeout`, `n5_aumento80`, `n5_risco`. Alvo: `classe`.
+- [x] Conferido que o alvo é a classe da próxima medição (`alvo`) e que a classe atual não é variável (o notebook faz `assert` contra a lista de colunas proibidas)
 
 ## 2. A árvore
 
 - [x] Uma árvore de decisão (CART, critério **Gini**)
-- [x] `max_depth` e `min_samples_leaf` escolhidos olhando **só a validação**, não o teste (grade de profundidade 2 a 10 e folha mínima 1 a 200; maior F1 macro na validação, com desempate por recall de FALHA e depois pela árvore menor)
+- [x] `max_depth` e `min_samples_leaf` escolhidos olhando **só a validação**: grade `max_depth` ∈ {3, 5, 8, 12, None} × `min_samples_leaf` ∈ {1, 20, 100} × `class_weight` ∈ {None, balanced} (30 candidatos); critério de escolha: maior F1 macro na validação, depois menor gap treino−validação, depois a árvore mais rasa
 - [x] Semente registrada: 42
 - [x] Ajuste (`fit`) só no treino
 - [x] Profundidade real, número de folhas e as primeiras divisões descritas
-- [x] Pelo menos três regras no formato “se métrica ≤ limiar e … então classe”, copiadas da árvore
+- [x] Três regras no formato "se ... então classe", lidas da árvore
 
-**Critério, profundidade máxima pedida, profundidade obtida, folhas:** Gini; `max_depth` pedido 6; `min_samples_leaf` 1; profundidade obtida 6; 13 folhas; semente 42.
+**Critério, profundidade, folhas:** Gini; `max_depth` 12; `min_samples_leaf` 100; `class_weight` None; profundidade obtida 12; **220 folhas**; semente 42. F1 macro de treino menos validação (gap): 0,0233.
 
 **Primeiras divisões:**
-- nível 0: `z_robusto` ≤ 3,501 (70.560 medições do treino)
-- nível 1: `n5_risco` ≤ 1,5 (63.250 medições)
-- nível 2: `n5_aumento80` ≤ 1,5 (50.351 medições) e `jitter_relativo` ≤ 3 (12.899 medições)
+- nível 0: `n_rtt_acima_p95_w3` ≤ 2,5 (das últimas 3 medições, quantas ficaram acima do P95)
+- nível 1: `perda_media_w3` ≤ 58,33 (lado ≤ 2,5) e `razao_rtt_p99` ≤ 1,00 (lado > 2,5)
+- nível 2: `n_rtt_acima_p95_w6` ≤ 1,5, `jitter_p95_max_w3` ≤ −0,50 e `n_rtt_acima_p95_w12` ≤ 11,5
 
-**Regras lidas da árvore:**
+**Regras lidas da árvore (as três folhas com mais amostras de treino):**
 
-1. Se `z_robusto` > 3,501 (ou vazio), então **FALHA** (folha com 7.310 medições do treino; 100% delas são FALHA).
-2. Se `z_robusto` ≤ 3,501 e `n5_risco` > 1,5 e `jitter_relativo` > 3 (ou vazio) e `perda_pct` ≤ 16,667 e `n5_aumento80` ≤ 1,5, então **RISCO** (folha com 4.640 medições do treino; 100% delas são RISCO).
-3. Se `z_robusto` ≤ 3,501 e `n5_risco` ≤ 1,5 e `n5_aumento80` ≤ 1,5 e `perda_pct` ≤ 16,667, então **OK** (folha com 50.325 medições do treino; 100% delas são OK).
+1. Se `n_rtt_acima_p95_w3` ≤ 2,5 e `perda_media_w3` ≤ 58,3 e `n_rtt_acima_p95_w6` ≤ 1,5 e `razao_jitter_p95` ≤ 2,02 e `jitter_p95_max_w12` > 0,376 e `perda_media_w12` ≤ 1,39 e `rtt_p95_max_w12` ≤ 1 e `jitter_p95_max_w12` ≤ 48,4 e `jitter_p95_max_w6` ≤ 1,3 e `amplitude_rtt_rel` ≤ 0,0353 e `razao_rtt_p99` > 0,806 e `delta_ttl_clip` > −1,5, então **OK** (65.965 amostras de treino).
+2. Mesmo caminho até `amplitude_rtt_rel` ≤ 0,0353, depois `razao_rtt_p99` ≤ 0,806 e `rtt_p95_max_w3` > 0,427, então **OK** (20.723 amostras).
+3. Se `n_rtt_acima_p95_w3` ≤ 2,5 e `perda_media_w3` ≤ 58,3 e `n_rtt_acima_p95_w6` ≤ 1,5 e `razao_jitter_p95` ≤ 2,02 e `jitter_p95_max_w12` > 0,376 e `perda_media_w12` ≤ 1,39 e `rtt_p95_max_w12` > 1 e `razao_rtt_p99` ≤ 1 e `n_rtt_acima_p95_w12` ≤ 1,5 e `razao_rtt_p95` ≤ 1 e 0,102 < `razao_jitter_p95` ≤ 0,905, então **OK** (13.175 amostras).
+
+**Leitura:** a raiz pergunta se o fluxo **já está** acima do P95 nas últimas medições. A árvore aprende persistência: se o fluxo está degradado agora, tende a continuar.
 
 ## 3. Leitura do erro
 
@@ -68,52 +66,50 @@ No bloco de **validação**. O teste ficou fechado até a Tarefa 5.
 
 - [x] Matriz 3×3 com contagem
 - [x] Precisão, recall e F1 de OK, RISCO e FALHA
-- [x] F1 macro
-- [x] Acurácia sozinha não decide: com maioria OK, ela fica alta mesmo errando FALHA
-- [x] Dois erros concretos: os casos pedidos não apareceram na validação (registrado abaixo)
+- [x] F1 macro e comparação com a persistência
+- [x] Acurácia sozinha não decide
+- [x] Erros concretos
 
-**Matriz e F1 macro (validação):**
+**Matriz (validação). Linha = classe real da próxima medição; coluna = prevista:**
 
 | | prev. OK | prev. RISCO | prev. FALHA |
 |---|---|---|---|
-| **real OK** | 21.912 | 0 | 0 |
-| **real RISCO** | 0 | 2.840 | 0 |
-| **real FALHA** | 0 | 2 | 3.199 |
+| **real OK** | 35.335 | 109 | 86 |
+| **real RISCO** | 1.990 | 1.514 | 90 |
+| **real FALHA** | 331 | 120 | 1.076 |
 
 | Classe | Precisão | Recall | F1 | Suporte |
 |---|---|---|---|---|
-| OK | 1,000 | 1,000 | 1,000 | 21.912 |
-| RISCO | 0,999 | 1,000 | 1,000 | 2.840 |
-| FALHA | 1,000 | 0,999 | 1,000 | 3.201 |
+| OK | 0,9384 | 0,9945 | 0,9656 | 35.530 |
+| RISCO | 0,8686 | 0,4213 | 0,5674 | 3.594 |
+| FALHA | 0,8594 | 0,7046 | 0,7744 | 1.527 |
 
-**F1 macro = 0,9998**; balanced accuracy = 0,9998; acurácia = 0,9999 (não é usada para decidir).
+**F1 macro = 0,7691.** Persistência (repetir a classe atual) na mesma validação: **0,7261**.
 
-**Erros concretos (fluxo, timestamp, métricas, classe verdadeira, classe da árvore):**
-- Caminho longo estável que caiu em FALHA: **o caso não apareceu na validação** (0 medições).
-- FALHA de caminho curto que caiu em OK: **o caso não apareceu na validação** (0 medições).
-- Os únicos erros foram **2 FALHAs previstas como RISCO**, ambas da regra 3 (`z_robusto` ≥ 3,5), uma em caminho curto e uma em caminho longo. A árvore corta em 3,501, e a regra de rótulo em 3,5.
+**Fatias:**
+
+| Fatia | N | F1 macro | Recall FALHA |
+|---|---|---|---|
+| Transições (a classe muda de t para t+1) | 4.121 | 0,2122 | 0,0049 |
+| Início de falha (estava OK/RISCO, a próxima é FALHA) | 406 | 0,0098 | 0,0049 |
+| Sem a âncora que concentra as FALHAs | 38.942 | 0,7488 | 0,6252 |
+
+**Erros concretos:** 2.726 erros em 40.651 linhas (6,71%); **87,4% acontecem quando a classe muda** entre t e t+1. A confusão dominante é **RISCO real previsto como OK** (1.990 casos). Exemplo: fluxo `6351_4837` (destino Trípoli/LY), 03/10/2026 19:58:18 UTC: classe atual OK, perda 0%, `razao_rtt_p99` 0,888. A próxima medição foi RISCO, e a árvore previu OK. Nada na medição atual anunciava a mudança.
 
 ## 4. Árvore de contraste (não é o modelo)
 
-Treinada no mesmo treino e com os mesmos hiperparâmetros, acrescentando o RTT absoluto (`rtt_ms`) e a rota codificada (`rota_cod`).
+Treinada no mesmo treino, com a profundidade e a folha mínima da árvore oficial, usando **só** o RTT absoluto (`rtt_ms`, −1 se ausente) e a rota codificada (país da sonda > país da âncora).
 
-- [x] Dizer qual divisão apareceu perto da raiz
-- [x] Declarar que essa árvore fica fora da entrega final
+- [x] Divisão perto da raiz identificada
+- [x] Essa árvore fica fora da entrega final
 
-| Árvore | Raiz | F1 macro (validação) | Importância de RTT + rota |
-|---|---|---|---|
-| (a) colunas oficiais + RTT absoluto + rota | `z_robusto` ≤ 3,501 | 0,9998 | 0,0 |
-| (b) só RTT absoluto + rota | corte fixo de RTT: `rtt_ms` ≤ 141,2 ms | 0,5571 | 1,0 |
+| Árvore | Raiz | F1 macro (validação) |
+|---|---|---|
+| Oficial (21 variáveis relativas) | `n_rtt_acima_p95_w3` ≤ 2,5 | 0,7691 |
+| Contraste (RTT absoluto + rota) | `rtt_ms` ≤ −0,15 (separa timeouts), depois cortes por código de rota | **0,5279** |
+| Persistência | — | 0,7261 |
 
-Classe prevista pela árvore (b), por escopo, ao lado da real (validação):
-
-| Escopo | Previsto OK | Real OK | Previsto RISCO | Real RISCO | Previsto FALHA | Real FALHA |
-|---|---|---|---|---|---|---|
-| curto | 94,7% | 83,2% | 2,2% | 6,7% | 3,1% | 10,0% |
-| regional | 95,3% | 80,8% | 3,0% | 9,0% | 1,7% | 10,2% |
-| longo | 89,9% | 72,6% | 0,6% | 13,6% | 9,4% | 13,8% |
-
-**O que a árvore de contraste usou na raiz:** um corte fixo de milissegundos (`rtt_ms` ≤ 141,2 ms), que separa os caminhos longos dos demais. Ela aprendeu distância e não degradação: o F1 macro cai para 0,557. Quando as métricas relativas estão disponíveis, a árvore ignora RTT e rota (importância zero). **As duas árvores de contraste ficam fora da entrega final.**
+**O que a árvore de contraste aprendeu:** sem as variáveis relativas, ela separa primeiro os timeouts e depois corta por rota, ou seja, por geografia. O F1 macro cai para 0,5279, abaixo da persistência. **A árvore de contraste fica fora da entrega final.**
 
 ## 5. Scrum e diário
 
@@ -122,7 +118,7 @@ Classe prevista pela árvore (b), por escopo, ao lado da real (validação):
 | Integrante | O que fiz nesta tarefa | Dificuldades | O que pretendo manter/ajustar |
 |---|---|---|---|
 | Isaac William Braz | Não atuei diretamente nesta tarefa (responsável: Fernanda). | — | — |
-| Fernanda Akemi Martins Sanpei | Árvore CART (Gini) com hiperparâmetros escolhidos só na validação; regras em português lidas da árvore; matriz 3×3, F1 por classe e F1 macro; erros concretos; árvore de contraste com RTT e rota, descartada. | Entender por que a árvore acerta quase tudo: o rótulo usa as mesmas métricas que ela lê. Interpretar pequenas diferenças de limiar (corte em 3,501 contra a regra 3,5). | Manter só colunas relativas e o teste fechado. Levar os erros da validação para a Tarefa 4. |
+| Fernanda Akemi Martins Sanpei | Árvore CART (Gini) com grade e desempate escolhidos só na validação; regras em português lidas da árvore; matriz 3×3, F1 por classe, F1 macro e fatias (transições, início de falha); comparação com a persistência; árvore de contraste com RTT absoluto e rota, descartada. | Entender por que o erro se concentra nas transições: a árvore aprende a manter a classe e quase não antecipa mudanças. | Manter só variáveis relativas e o teste fechado. Levar a confusão RISCO→OK para a Tarefa 4. |
 | Geziel de Andrade | Não atuei diretamente nesta tarefa (responsável: Fernanda). | — | — |
 | Hendrick Ambriola | Não atuei diretamente nesta tarefa (responsável: Fernanda). | — | — |
 | Davi Gabriel Borges dos Santos | Não atuei diretamente nesta tarefa (responsável: Fernanda). | — | — |
