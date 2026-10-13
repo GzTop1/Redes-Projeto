@@ -2,7 +2,7 @@
 
 **Equipe:** Grupo 7 — Isaac William Braz, Fernanda Akemi Martins Sanpei, Geziel de Andrade, Hendrick Ambriola, Davi Gabriel Borges dos Santos, Victor Gabriel Alves  
 **Repositório GitHub:** https://github.com/GzTop1/Redes-Projeto  
-**Notebook de referência:** `Projeto_Preditor_Falhas_PPF_corrigido_v3.ipynb` (todos os números deste documento vêm da execução de 11/10/2026)
+**Notebook de referência:** https://github.com/GzTop1/Redes-Projeto/blob/main/Projeto_Preditor_Redes_Grupo7/Projeto_Preditor_Falhas_PPF.ipynb
 
 > Um RFC formaliza o problema, o contrato dos dados e o critério de decisão antes de se investir no classificador. O projeto segue o pipeline de referência da professora (`preditor_redes-main`, etapas 1 a 8). A etapa 9 (monitoramento) e a pasta `producao/` não fazem parte do trabalho.
 
