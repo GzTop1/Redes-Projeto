@@ -1,15 +1,13 @@
-# Diário da Tarefa 4 — Ajuste da árvore a partir do erro
+# Diário da Tarefa 4 — Ajuste do modelo a partir do erro
 
 **Período:** 05/10/2026 a 11/10/2026  
-**Projeto:** Preditor de degradação de rede com RTT normalizado (independente da rota)
+**Projeto:** Preditor de degradação de rede relativo ao baseline do fluxo (independente da rota)
 
 **Equipe:** Grupo 7  
 **Scrum Master da tarefa:** Hendrick Ambriola  
 **Repositório GitHub:** https://github.com/GzTop1/Redes-Projeto
-
-> O rótulo e o baseline da Tarefa 2 continuam. O corte temporal continua. Esta tarefa **não troca o algoritmo**: ajusta a mesma árvore de decisão com o que a Tarefa 3 errou.
 >
-> Ajuste permitido: profundidade, mínimo de amostras na folha, critério (Gini ou entropia) e poda. Se entrar coluna nova, ela tem de ser outra métrica **relativa ao baseline** (tendência do `z_robusto` nas janelas anteriores, por exemplo). País, IP, rota e RTT absoluto continuam fora.
+> O rótulo, o baseline e o corte da Tarefa 2 continuam. País, IP, rota e RTT absoluto continuam fora.
 
 ### Contrato desta tarefa
 
@@ -17,11 +15,11 @@
 |---|---|---|
 | **Entra** | Árvore da Tarefa 3, matriz e erros | Tarefa 3 |
 | **Entra** | Mesmo baseline, mesmo rótulo, mesmo corte | Tarefa 2 |
-| **Sai** | Árvore ajustada e tabela Tarefa 3 → Tarefa 4 (F1 macro e recall de FALHA na validação) | Tarefa 5 usa **esta** árvore como ponto de partida |
-| **Sai** | Regras novas em português | Tarefa 5 |
-| **Sai** | Dicionário v0.3, se nasceu coluna relativa nova | Tarefa 5 |
+| **Sai** | Modelo ajustado (`modelos/modelo_T4.joblib`) e tabela T3 → T4 (`tabela_T3_T4.csv`) | Tarefa 5 |
+| **Sai** | Registro de todos os candidatos (`grade_busca.csv`) | Tarefa 5 |
+| **Sai** | Dicionário v0.3 | Tarefa 5 |
 
-**Não sai daqui:** outro tipo de modelo, mudança do teste, recálculo do baseline com o Período B.
+**Não sai daqui:** mudança do teste, recálculo do baseline com o Período B.
 
 - [x] O corte é o da Tarefa 2
 - [x] Nenhuma coluna de rota entrou
@@ -30,64 +28,71 @@
 
 ## 1. O que o erro pediu
 
-- [x] Citar os erros da Tarefa 3 (classe confundida, caminho longo ou curto, pico isolado virando FALHA, RISCO sumindo)
-- [x] Cada mudança da árvore responde a um desses erros
+- [x] Erros da Tarefa 3 citados
+- [x] Cada mudança responde a um desses erros
 - [x] Parâmetros escolhidos na validação
 
 Diagnóstico da árvore da Tarefa 3 na validação:
-- Pares confundidos: só **2 FALHAs previstas como RISCO**.
-- Erro por regra do rótulo: regra 3 (`z_robusto` ≥ 3,5) com 2 erros em 3.149 (0,06%); regras 1, 4, 5 e 6 com 0%.
-- Erro por escopo (auditoria): 1 em caminho curto (de 5.993), 1 em longo (de 9.982), 0 em regional (de 11.978).
-- Pico isolado (OK com aumento > 80%) previsto como FALHA: 0.
-- Recall de RISCO 1,000; recall de FALHA 0,999.
+- Confusão dominante: **RISCO real previsto como OK** (1.990 casos).
+- Recall de RISCO 0,4213; recall de FALHA 0,7046.
+- **87,4%** dos erros acontecem quando a classe muda de t para t+1.
+- Gap treino−validação: 0,0233.
 
-**Erro da Tarefa 3 → mudança na árvore:**
+**Erro da Tarefa 3 → mudança testada (uma por vez, sobre a árvore da T3):**
 
-| Erro observado | Mudança (profundidade, folha, critério ou métrica relativa nova) | Resultado na validação |
-|---|---|---|
-| Confusão RISCO ↔ FALHA: 2 FALHAs previstas como RISCO, ambas da regra 3 | Critério **entropia** | ΔF1 macro = 0,0000; mesmas 13 folhas e recall de FALHA 0,9994 |
-| Pico isolado virando FALHA: 0 casos; risco de folhas pequenas decorarem o treino | `min_samples_leaf` = 20 | ΔF1 macro = −0,0018; recall de FALHA cai para 0,9922 |
-| RISCO sumindo: não aconteceu (recall de RISCO = 1,000; regra 5 com 0% de erro) | Profundidade + 2 (`max_depth` 8) | ΔF1 macro = 0,0000; a profundidade real continua 6 |
-| Árvore com 13 folhas, possivelmente maior que o necessário | Poda `ccp_alpha` = 1e-4 e 1e-3 | ΔF1 macro = −0,0004 (10 folhas) e −0,0018 (5 folhas) |
-| Erros espalhados em fluxos diferentes (1 curto, 1 longo) | 4 colunas relativas novas: `z_tendencia`, `z_max5`, `n5_jitter3`, `perda_media5` | ΔF1 macro = 0,0000 com os parâmetros da T3 |
+| Erro observado | Mudança | F1 macro (validação) | Δ vs T3 | Recall FALHA | Recall RISCO | Folhas |
+|---|---|---|---|---|---|---|
+| Recall de RISCO baixo | Critério **entropia** | 0,7675 | −0,0016 | 0,7099 | 0,4160 | 295 |
+| RISCO → OK dominante; folhas pequenas podem decorar o treino | `min_samples_leaf` 500 | 0,7671 | −0,0020 | 0,7079 | 0,4293 | 107 |
+| Erros nas transições | Mais profundidade (`max_depth` None) | 0,7691 | 0,0000 | 0,7046 | 0,4213 | 1.453 |
+| Gap treino−validação | Poda `ccp_alpha` = 0,0005 | 0,7602 | −0,0090 | 0,7079 | 0,3901 | 7 |
+| RISCO → OK dominante (desbalanceamento) | `class_weight` balanced | 0,6828 | −0,0863 | **0,7616** | **0,5657** | 299 |
+| Erros nas transições | Outras famílias (Naive Bayes, Random Forest) | ver abaixo | | | | |
 
-Depois dos experimentos isolados, uma **busca combinada de 288 combinações** (critério × profundidade × folha mínima × poda × colunas), escolhida só na validação.
+Nenhuma mudança isolada na árvore superou o F1 macro da Tarefa 3. A mais profunda empatou com 1.453 folhas; pela regra de desempate, a árvore de 220 folhas continua preferida. O `class_weight` balanced é a única mudança que melhora os dois recalls, mas custa 0,086 de F1 macro.
 
-## 2. Árvore ajustada
+**Grade completa das três famílias (treino → validação):**
 
-- [x] Mesmas colunas relativas, mais o que a tabela acima acrescentou
-- [x] Profundidade, folhas e três regras em português
+| Família | Candidatos | Melhor configuração | F1 macro (validação) | Gap |
+|---|---|---|---|---|
+| Naive Bayes | 4 | `var_smoothing` 1e-3 | 0,5223 | — |
+| Árvore de decisão | 30 | `max_depth` 12, `min_samples_leaf` 100 | 0,7691 | 0,0233 |
+| **Random Forest** | 24 | 200 árvores, `max_depth` None, `min_samples_leaf` 5, `max_features` sqrt, sem `class_weight` | **0,7702** | 0,0521 |
+
+Pela regra de seleção (maior F1 macro, depois menor gap), o escolhido é o **Random Forest**.
+
+## 2. Modelo ajustado
+
+- [x] Mesmas 21 variáveis relativas (nenhuma coluna nova)
+- [x] Parâmetros registrados
 - [x] Fit só no treino
+- [ ] Três regras em português: **não se aplica** ao Random Forest (200 árvores). As regras legíveis continuam sendo as da árvore da Tarefa 3.
 
-**Parâmetros finais candidatos (ainda não é o teste):** CART, critério Gini, `max_depth` 5, `min_samples_leaf` 1, `ccp_alpha` 0,0, semente 42; profundidade obtida 5; **11 folhas**. Colunas: as 8 da Tarefa 3 mais `z_tendencia`, `z_max5`, `n5_jitter3` e `perda_media5`.
-
-**Primeiras divisões:** nível 0 `z_robusto` ≤ 3,501; nível 1 `n5_risco` ≤ 1,5; nível 2 `n5_aumento80` ≤ 1,5 e `jitter_relativo` ≤ 3.
-
-**Regras:**
-
-1. Se `z_robusto` > 3,501 (ou vazio), então **FALHA** (folha com 7.310 medições do treino; 100% delas são FALHA).
-2. Se `z_robusto` ≤ 3,501 e `n5_risco` > 1,5 e `jitter_relativo` > 3 (ou vazio) e `perda_pct` ≤ 16,667 e `n5_aumento80` ≤ 1,5, então **RISCO** (folha com 4.640 medições do treino; 100% delas são RISCO).
-3. Se `z_robusto` ≤ 3,501 e `n5_risco` ≤ 1,5 e `n5_aumento80` ≤ 1,5 e `perda_pct` ≤ 16,667, então **OK** (folha com 50.325 medições do treino; 100% delas são OK).
+**Parâmetros:** `RandomForestClassifier`, `n_estimators` 200, `max_depth` None, `min_samples_leaf` 5, `max_features` sqrt, `class_weight` None, `random_state` 42.
 
 ## 3. Comparação na validação
 
-| | F1 macro | Recall de FALHA | Recall de RISCO |
-|---|---|---|---|
-| Árvore da Tarefa 3 | 0,9998 | 0,9994 | 1,000 |
-| Árvore desta tarefa | 0,9998 | 0,9994 | 1,000 |
+| Modelo | F1 macro | Recall FALHA | Recall RISCO | F1 macro (transições) | Recall FALHA (início de falha) |
+|---|---|---|---|---|---|
+| Persistência (classe atual) | 0,7261 | 0,7341 | 0,4975 | 0,0000 | 0,0000 |
+| T3: árvore | 0,7691 | 0,7046 | 0,4213 | 0,2122 | 0,0049 |
+| T4: Random Forest | 0,7702 | 0,7073 | 0,4190 | 0,2192 | 0,0074 |
 
-- [x] Se não houve ganho, dizer o que foi tentado e descartado
-- [x] Matriz 3×3 da árvore desta tarefa, na validação
+- [x] Matriz 3×3 do modelo desta tarefa, na validação
 
 | | prev. OK | prev. RISCO | prev. FALHA |
 |---|---|---|---|
-| **real OK** | 21.912 | 0 | 0 |
-| **real RISCO** | 0 | 2.840 | 0 |
-| **real FALHA** | 0 | 2 | 3.199 |
+| **real OK** | 35.367 | 83 | 80 |
+| **real RISCO** | 1.991 | 1.506 | 97 |
+| **real FALHA** | 335 | 112 | 1.080 |
 
-Balanced accuracy = 0,9998; acurácia = 0,9999.
+| Classe | Precisão | Recall | F1 |
+|---|---|---|---|
+| OK | 0,9383 | 0,9954 | 0,9660 |
+| RISCO | 0,8854 | 0,4190 | 0,5688 |
+| FALHA | 0,8592 | 0,7073 | 0,7759 |
 
-**Leitura do ganho (ou da falta de ganho):** nenhuma mudança superou o F1 macro da Tarefa 3, que já estava em 0,9998. Foram tentados e descartados: entropia (sem ganho), folha mínima maior e poda forte (pioraram o recall de FALHA para 0,9922), mais profundidade (sem efeito: a árvore não cresce além de 6). A árvore escolhida, pela regra de desempate, tem o mesmo F1 macro e o mesmo recall de FALHA com **11 folhas em vez de 13**. As colunas novas tornaram isso possível: sem elas, a profundidade 5 chegava só a F1 0,9996 e recall de FALHA 0,9988. O ganho, portanto, é de simplicidade, não de desempenho. O desempenho quase perfeito vem de o rótulo ser feito com as mesmas métricas que a árvore lê.
+**Leitura do ganho:** de T3 para T4, o ganho é de **+0,0011** em F1 macro, dentro do que se espera de variação entre modelos. O Random Forest também tem gap maior (0,052 contra 0,023). Contra a persistência, os dois modelos ganham cerca de +0,044, porque erram menos ao manter a classe. Mas nenhum dos dois resolve o erro principal: nas transições o F1 macro fica em cerca de 0,21, e quase nenhum início de FALHA é antecipado. A persistência tem até recall de FALHA maior (0,734) que os modelos; a vantagem deles está na precisão.
 
 ## 4. Revisão com o docente
 
@@ -96,16 +101,15 @@ Balanced accuracy = 0,9998; acurácia = 0,9999.
 
 ### Dicionário de dados v0.3
 
-Tudo da v0.2, mais as colunas relativas criadas nesta tarefa (todas usam só medições anteriores ou a atual do mesmo fluxo):
+As **variáveis não mudam** (as mesmas 21 da v0.2). Entram os artefatos do modelo:
 
-| Coluna | Unidade | Cálculo | Se faltar |
-|---|---|---|---|
-| `z_tendencia` | — | `z_robusto` atual − média de `z_robusto` nas 3 medições anteriores do fluxo | vazio se o atual ou as 3 anteriores não têm z |
-| `z_max5` | — | maior `z_robusto` nas últimas 5 medições (inclui a atual) | vazio se nenhuma das 5 tem z |
-| `n5_jitter3` | 0 a 5 | quantas das últimas 5 têm `jitter_relativo` ≥ 3 | — |
-| `perda_media5` | % | média de `perda_pct` nas últimas 5 | — |
+| Artefato | Conteúdo |
+|---|---|
+| `grade_busca.csv` | uma linha por candidato: família, parâmetros, F1 macro de treino e validação, gap, recalls |
+| `modelo_T4.joblib` | modelo escolhido, lista de variáveis, família e parâmetros |
+| `tabela_T3_T4.csv` | persistência, T3 e T4 lado a lado |
 
-Continuam proibidos: país, IP, rota, `fluxo_id` e RTT absoluto.
+Continuam proibidos: país, IP, rota, `id_fluxo` e RTT absoluto.
 
 ## 5. Scrum e diário
 
@@ -116,7 +120,7 @@ Continuam proibidos: país, IP, rota, `fluxo_id` e RTT absoluto.
 | Isaac William Braz | Não atuei diretamente nesta tarefa (responsável: Hendrick). | — | — |
 | Fernanda Akemi Martins Sanpei | Não atuei diretamente nesta tarefa (responsável: Hendrick). | — | — |
 | Geziel de Andrade | Não atuei diretamente nesta tarefa (responsável: Hendrick). | — | — |
-| Hendrick Ambriola | Diagnóstico dos erros da T3; quatro colunas relativas novas; experimentos com uma mudança por vez (entropia, folha mínima, profundidade, poda, colunas novas); busca combinada na validação; tabela T3 → T4; dicionário v0.3. | Ligar cada mudança a um erro, com só 2 erros na validação. Aceitar e documentar que nenhuma mudança trouxe ganho de F1. | Manter a escolha só pela validação. Apresentar ao docente o que foi tentado e descartado. |
+| Hendrick Ambriola | Diagnóstico dos erros da T3; experimentos com uma mudança por vez (entropia, folha mínima, profundidade, poda, `class_weight`); grade completa de Naive Bayes, árvore e Random Forest; tabela T3 → T4; dicionário v0.3. | Ligar cada mudança a um erro. Aceitar que nenhuma mudança da árvore trouxe ganho. | Manter a escolha só pela validação e apresentar o que foi descartado. |
 | Davi Gabriel Borges dos Santos | Não atuei diretamente nesta tarefa (responsável: Hendrick). | — | — |
 | Victor Gabriel Alves | Não atuei diretamente nesta tarefa (responsável: Hendrick). | — | — |
 
