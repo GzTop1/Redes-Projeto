@@ -35,6 +35,8 @@ Não há tarefa seguinte.
 - [x] Confirmação por código de que país, IP, rota e RTT absoluto não estão no modelo
 - [ ] Três regras em português: não se aplica ao Random Forest. Como referência legível, ficam as regras da árvore da Tarefa 3 (diário da Tarefa 3, seção 2).
 
+O modelo final segue a escolha do modelo de referência da professora (`rf_v1.0.0`): mesma família e mesmos hiperparâmetros.
+
 **Parâmetros:** Random Forest, 200 árvores, `max_depth` None, `min_samples_leaf` 5, `max_features` sqrt, `class_weight` None, semente 42. F1 macro na validação: 0,7702.  
 **Colunas (21):** `perda_pct`, `rtt_ausente`, `razao_rtt_p95`, `razao_rtt_p99`, `razao_jitter_p95`, `amplitude_rtt_rel`, `delta_ttl_clip`, `ttl_reset`, `perda_media_wN`, `rtt_p95_max_wN`, `jitter_p95_max_wN`, `n_rtt_acima_p95_wN` (N = 3, 6, 12) e `perdas_consecutivas`.  
 **País, IP, rota e RTT absoluto no modelo:** não (o notebook faz `assert` para `anchor_pais`, `probe_pais`, `anchor_ip`, `rtt_ms`, `rota`, `probe_asn` e `faixa_distancia`).
@@ -117,6 +119,16 @@ Fluxos conhecidos, último dia do Período B (de t0 + 6 dias + 60 min até 05/10
   - Fluxos com cobertura baixa ficam de fora; destinos sem fluxo utilizável: 4227 (Changhua/TW) e 4862 (Antananarivo/MG).
   - Baseline fixo; não acompanha deriva lenta.
   - Generalização fraca em caminhos curtos não vistos.
+- [x] **Comparação com o modelo de referência da professora** (`preditor_redes`, mesmo pipeline e mesma família de modelo, outra amostra de âncoras e sondas):
+
+  | Indicador (teste) | Referência (`rf_v1.0.0`) | Grupo 7 |
+  |---|---|---|
+  | Macro-F1 | 0,755 | 0,7675 |
+  | Persistência | 0,711 | 0,7302 |
+  | Recall de FALHA | 0,695 | 0,6597 |
+  | Recall no início de FALHA | 0,146 (66 de 452) | 0,0195 (8 de 411) |
+
+  Os números gerais ficam próximos. A diferença está na antecipação: a referência antecipa 14,6% dos inícios de FALHA, e o modelo do grupo, 2%. Como o código é equivalente ao da professora (123 de 123 verificações idênticas), a hipótese é que a diferença venha dos dados: as âncoras e sondas sorteadas não são as mesmas, e na referência uma âncora concentra 16,8% das falhas do teste. Fica como ponto a investigar, sem nova abertura do teste.
 
 ## 5. Ficha do modelo
 
@@ -132,7 +144,7 @@ Fluxos conhecidos, último dia do Período B (de t0 + 6 dias + 60 min até 05/10
 | Fluxos não vistos | 13 fluxos: F1 macro 0,6275 (persistência 0,6207); faixa curta sem detecção |
 | Detector ou preditor | Detector suavizado: recall de 0,0195 nos inícios de FALHA |
 | O que ele não faz | Não classifica distância. Não opera em fluxo sem baseline próprio. Não antecipa falhas de forma confiável. |
-| Como reproduzir | `requirements.txt` (pandas 2.2.3, numpy 2.1.3, requests 2.32.4, scikit-learn 1.6.1, joblib 1.6.0); notebook `Projeto_Preditor_Falhas_PPF_corrigido_v3.ipynb` executado de cima para baixo; `config/` (`parametros.json`, `tabela_desenho.csv`, `fluxos_modelagem.csv`) e `data/processed/` (`corte_temporal.json`, `modelo_final_congelado.json`, `ficha_do_modelo.json`) |
+| Como reproduzir | `requirements.txt` (pandas 2.2.3, numpy 2.1.3, requests 2.32.4, scikit-learn 1.6.1, joblib 1.6.0); notebook `Projeto_Preditor_Redes_Grupo7/Projeto_Preditor_Falhas_PPF.ipynb` executado de cima para baixo; `config/` (`parametros.json`, `tabela_desenho.csv`, `fluxos_modelagem.csv`) e `data/processed/` (`corte_temporal.json`, `modelo_final_congelado.json`, `ficha_do_modelo.json`) |
 
 **Dicionário v0.4:** as 21 colunas acima, mais `alvo` (classe da próxima medição). Só auditoria: `classe_atual`, `rtt_ms`, `id_fluxo`, `anchor_id`, `probe_id`, `timestamp`, `split`. Fora do modelo: país, IP, rota, faixa de distância, ASN e RTT absoluto.
 
