@@ -8,7 +8,7 @@ Projeto interdisciplinar que usa medições públicas de ping do **RIPE Atlas** 
 |---|---|---|
 | Estrutura de Dados II | Profª Andréa Ono Sakai | [Estrutura_de_Dados_II](Estrutura_de_Dados_II/) |
 | Redes de Computadores | Profª Denise Braito de Souza | [Redes_de_Computadores](Redes_de_Computadores/) |
-| Análise e Projeto de Sistemas | Prof. Luís Ricardo | [Analise_de_Sistemas](Analise_de_Sistemas/) |
+| Análise e Projeto de Sistemas | Prof. Luís Ricardo | [analise_de_sistemas](analise_de_sistemas/) |
  
 As evidências individuais de cada integrante estão em [prints](prints/).
  
