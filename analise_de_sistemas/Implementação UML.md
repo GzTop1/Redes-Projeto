@@ -1,9 +1,13 @@
 # Análise e Projeto de Sistemas – Diagramas UML
 
 **Projeto:** Preditor de Falhas (Network Failure Predictor)
+
 **Disciplina:** Análise e Projeto de Sistemas – 3N · Prof. Luís Ricardo
+
 **Interdisciplinar com:** Profª Andrea Ono Sakai e Profª Denise Braito de Souza
+
 **Curso:** Ciência da Computação – 4º semestre
+
 **Equipe:** DSFSGAHAIBVA · **Período:** 15/09/2026 a 11/11/2026
 
 | Integrantes |
