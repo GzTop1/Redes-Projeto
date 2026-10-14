@@ -96,7 +96,7 @@ Regras da coleta:
 
 ## 4. Scrum
 
-- [x] Product Owner = docente; Scrum Master da tarefa = Isaac William Braz; time de desenvolvimento = os seis integrantes do Grupo 7
+- [x] Product Owner = Fernanda Akemi Martins Sanpei, indicada pelo grupo; Scrum Master da tarefa = Isaac William Braz; time de desenvolvimento = os demais integrantes do Grupo 7
 - [x] Board com To do / Doing / Done atualizado no GitHub
 - [x] Pelo menos 3 histórias: coletar 30 âncoras estratificadas; preservar o bruto com cache e retentativa refinada; separar Período A e Período B em hora cheia sem rotular.
 
