@@ -1,0 +1,192 @@
+{
+  "meta": {
+    "gerado_em": "2026-10-11T01:10:09+00:00",
+    "min_probes": 3,
+    "max_probes": 5,
+    "seed": 42,
+    "destinos_com_poucas_probes": [],
+    "erros": []
+  },
+  "destinos": [
+    {
+      "anchor_id": 1070,
+      "candidatas": 1017,
+      "selecionadas": 5,
+      "poucas": false
+    },
+    {
+      "anchor_id": 1223,
+      "candidatas": 1017,
+      "selecionadas": 5,
+      "poucas": false
+    },
+    {
+      "anchor_id": 1360,
+      "candidatas": 1018,
+      "selecionadas": 5,
+      "poucas": false
+    },
+    {
+      "anchor_id": 1418,
+      "candidatas": 1027,
+      "selecionadas": 5,
+      "poucas": false
+    },
+    {
+      "anchor_id": 1526,
+      "candidatas": 1017,
+      "selecionadas": 5,
+      "poucas": false
+    },
+    {
+      "anchor_id": 1612,
+      "candidatas": 1018,
+      "selecionadas": 5,
+      "poucas": false
+    },
+    {
+      "anchor_id": 1880,
+      "candidatas": 1018,
+      "selecionadas": 5,
+      "poucas": false
+    },
+    {
+      "anchor_id": 2026,
+      "candidatas": 1018,
+      "selecionadas": 5,
+      "poucas": false
+    },
+    {
+      "anchor_id": 2343,
+      "candidatas": 1018,
+      "selecionadas": 5,
+      "poucas": false
+    },
+    {
+      "anchor_id": 2581,
+      "candidatas": 1018,
+      "selecionadas": 5,
+      "poucas": false
+    },
+    {
+      "anchor_id": 3217,
+      "candidatas": 1020,
+      "selecionadas": 5,
+      "poucas": false
+    },
+    {
+      "anchor_id": 3413,
+      "candidatas": 1022,
+      "selecionadas": 5,
+      "poucas": false
+    },
+    {
+      "anchor_id": 3679,
+      "candidatas": 1022,
+      "selecionadas": 5,
+      "poucas": false
+    },
+    {
+      "anchor_id": 3701,
+      "candidatas": 1023,
+      "selecionadas": 5,
+      "poucas": false
+    },
+    {
+      "anchor_id": 3816,
+      "candidatas": 1026,
+      "selecionadas": 5,
+      "poucas": false
+    },
+    {
+      "anchor_id": 3996,
+      "candidatas": 1029,
+      "selecionadas": 5,
+      "poucas": false
+    },
+    {
+      "anchor_id": 4074,
+      "candidatas": 1026,
+      "selecionadas": 5,
+      "poucas": false
+    },
+    {
+      "anchor_id": 4091,
+      "candidatas": 1026,
+      "selecionadas": 5,
+      "poucas": false
+    },
+    {
+      "anchor_id": 4227,
+      "candidatas": 1028,
+      "selecionadas": 5,
+      "poucas": false
+    },
+    {
+      "anchor_id": 4292,
+      "candidatas": 1029,
+      "selecionadas": 5,
+      "poucas": false
+    },
+    {
+      "anchor_id": 4335,
+      "candidatas": 1030,
+      "selecionadas": 5,
+      "poucas": false
+    },
+    {
+      "anchor_id": 4371,
+      "candidatas": 1029,
+      "selecionadas": 5,
+      "poucas": false
+    },
+    {
+      "anchor_id": 4377,
+      "candidatas": 1038,
+      "selecionadas": 5,
+      "poucas": false
+    },
+    {
+      "anchor_id": 4395,
+      "candidatas": 1030,
+      "selecionadas": 5,
+      "poucas": false
+    },
+    {
+      "anchor_id": 4523,
+      "candidatas": 1035,
+      "selecionadas": 5,
+      "poucas": false
+    },
+    {
+      "anchor_id": 4554,
+      "candidatas": 1031,
+      "selecionadas": 5,
+      "poucas": false
+    },
+    {
+      "anchor_id": 4707,
+      "candidatas": 1036,
+      "selecionadas": 5,
+      "poucas": false
+    },
+    {
+      "anchor_id": 4811,
+      "candidatas": 1037,
+      "selecionadas": 5,
+      "poucas": false
+    },
+    {
+      "anchor_id": 4837,
+      "candidatas": 1037,
+      "selecionadas": 5,
+      "poucas": false
+    },
+    {
+      "anchor_id": 4862,
+      "candidatas": 1037,
+      "selecionadas": 5,
+      "poucas": false
+    }
+  ]
+}

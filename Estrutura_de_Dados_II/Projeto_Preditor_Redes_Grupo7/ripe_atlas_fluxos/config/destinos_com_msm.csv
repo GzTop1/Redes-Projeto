@@ -1,0 +1,31 @@
+anchor_id,pais,cidade,fqdn,ip,msm_id,interval
+4335,CA,Vancouver,ca-van-as396993.anchors.atlas.ripe.net,198.135.169.29,112696111,240
+1418,TT,Princes Town,tt-ptw-as264811.anchors.atlas.ripe.net,131.72.76.118,88535195,240
+1880,US,Dallas,us-dcx-as5006.anchors.atlas.ripe.net,206.144.243.4,23663001,240
+3816,AR,Buenos Aires,ar-bue-as4270.anchors.atlas.ripe.net,170.210.5.200,94342428,240
+4371,BO,Cochabamba,bo-cbb-as27839.anchors.atlas.ripe.net,200.58.72.14,125059414,240
+3679,BR,Feira de Santana,br-fec-as264479.anchors.atlas.ripe.net,138.117.32.11,66196984,240
+3701,CL,Santiago,cl-scl-as20015-client.anchors.atlas.ripe.net,201.219.153.38,66410849,240
+3217,PE,Arequipa,pe-aqp-as263189.anchors.atlas.ripe.net,179.43.96.85,48152563,240
+4074,UY,Montevideo,uy-mvd-as28000.anchors.atlas.ripe.net,200.7.84.24,86022641,240
+3996,VE,Maracay,ve-myc-as269730.anchors.atlas.ripe.net,38.10.250.194,108763677,240
+2343,CH,Winterthur,ch-win-as58299.anchors.atlas.ripe.net,5.226.144.240,26523893,240
+1360,DE,Mutterstadt,de-mdt-as15945.anchors.atlas.ripe.net,213.206.174.172,15708032,240
+1612,FR,Rennes,fr-rns-as204092.anchors.atlas.ripe.net,80.67.190.218,19299324,240
+4554,GR,Thessaloniki,gr-skg-as199081.anchors.atlas.ripe.net,5.172.196.86,145218429,240
+1223,IT,Milano,it-mil-as42473.anchors.atlas.ripe.net,188.172.218.22,10683789,240
+1070,PL,Katowice,pl-ktw-as206186.anchors.atlas.ripe.net,188.241.28.37,10509900,240
+1526,AU,Sydney,au-syd-as20473.anchors.atlas.ripe.net,45.76.126.106,19649596,240
+4091,PW,Koror,pw-ror-as17893.anchors.atlas.ripe.net,202.124.238.42,86005051,240
+4837,LY,Tripoli,ly-tip-as328539.anchors.atlas.ripe.net,102.38.2.222,214262295,240
+4862,MG,Antananarivo,mg-tnr-as328411.anchors.atlas.ripe.net,197.158.77.104,220452552,240
+3413,MU,Quatre Bornes,mu-qbe-as328699.anchors.atlas.ripe.net,102.222.106.178,52415816,240
+4292,SL,Freetown,sl-fna-as209049.anchors.atlas.ripe.net,195.110.184.7,108739161,240
+4811,ZA,Johannesburg,za-jnb-as37271.anchors.atlas.ripe.net,197.157.72.234,207142179,240
+2581,AE,Dubai,ae-dxb-as15802.anchors.atlas.ripe.net,94.203.76.219,29535586,240
+4707,BH,Seef,bh-amh-as51375.anchors.atlas.ripe.net,37.131.66.98,209654486,240
+4523,KZ,Astana,kz-ast-as21299.anchors.atlas.ripe.net,86.107.143.254,162292065,240
+4395,LK,Colombo,lk-cmb-as38229.anchors.atlas.ripe.net,192.248.2.30,125059629,240
+4377,PK,"Lahore, Pakistan",pk-lhe-as17557-client.anchors.atlas.ripe.net,203.135.63.50,179602008,240
+4227,TW,Changhua,tw-chw-as1659-client.anchors.atlas.ripe.net,120.107.174.100,99711822,240
+2026,VN,Ho Chi Minh City,vn-sgn-as24173.anchors.atlas.ripe.net,101.53.31.6,23834668,240
