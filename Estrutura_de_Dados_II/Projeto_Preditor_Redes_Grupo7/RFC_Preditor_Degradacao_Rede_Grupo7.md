@@ -1,6 +1,6 @@
 # RFC: Preditor de degradação de rede relativo ao baseline do fluxo — Grupo 7
 
-**Equipe:** Grupo 7 — Isaac William Braz, Fernanda Akemi Martins Sanpei, Geziel de Andrade, Hendrick Ambriola, Davi Gabriel Borges dos Santos, Victor Gabriel Alves  
+**Equipe:** Grupo 7 — Isaac William Braz, Fernanda Akemi Martins Sanpei, Geziel de Andrade, Hendrick Ambriola, Davi Gabriel Borges dos Santos  
 **Repositório GitHub:** https://github.com/GzTop1/Redes-Projeto  
 **Notebook de referência:** https://github.com/GzTop1/Redes-Projeto/blob/main/Estrutura_de_Dados_II/Projeto_Preditor_Redes_Grupo7/Projeto_Preditor_Falhas_PPF.ipynb
 
@@ -181,11 +181,14 @@ A escolha coincide com o modelo de referência da professora (`rf_v1.0.0`): mesm
 | **Teste — modelo final** | **0,7675** | **0,6597** | Balanced accuracy 0,7078 |
 | Teste — persistência | 0,7302 | — | Modelo +0,0373 |
 | Teste — classe majoritária (OK) | 0,3082 | 0 | — |
+| Teste — árvore T3 (só comparação) | 0,7673 | 0,6604 | Medida uma vez, depois da escolha |
 | Teste — transições (classe muda) | 0,2344 | — | — |
 | Teste — início de FALHA (411 casos) | — | 0,0195 | Quase nada antecipado |
 | Não vistos — modelo | 0,6275 | 0,2659 | Persistência 0,6207 |
 
 Nos fluxos não vistos, por faixa de distância: na **curta**, 0 de 270 degradações foram detectadas; na média, 108 de 914; na longa, 1.347 de 2.240.
+
+**Árvore × Random Forest e gráficos.** O notebook mostra, como o notebook didático da professora, a distribuição das classes, uma árvore ilustrativa, a árvore T3 desenhada, as melhores combinações e matrizes de cada família, as matrizes no teste e a importância das variáveis (todas em `modelos/figuras/`, em JPG). No Random Forest, as variáveis mais importantes são `razao_rtt_p99`, `razao_rtt_p95` e `n_rtt_acima_p95_w6`, todas relativas ao baseline do fluxo.
 
 ### 9.1 Comparação com o modelo de referência
 
@@ -215,7 +218,7 @@ Os indicadores gerais são próximos. A diferença está na antecipação de fal
 - **Teste curto:** um único bloco de cerca de 1 dia.
 - **Fluxos não independentes:** a mesma sonda serve vários destinos, e amostras a cada 4 min são autocorrelacionadas.
 - **Cobertura:** 19 fluxos e 2 destinos ficaram fora.
-- **Modelo final não é interpretável por regras** (Random Forest, como na referência). As regras legíveis são as da árvore da Tarefa 3, com F1 macro de validação 0,7691.
+- **Modelo final não é interpretável por regras** (Random Forest, como na referência). As regras legíveis são as da árvore da Tarefa 3, com F1 macro de 0,7691 na validação e 0,7673 no teste, praticamente empatada com o Random Forest (0,7675).
 
 ---
 
@@ -249,7 +252,7 @@ Os indicadores gerais são próximos. A diferença está na antecipação de fal
 
 ## 13. Perguntas em aberto
 
-1. **Modelo entregue:** o Random Forest venceu a árvore por apenas +0,0011 de F1 macro na validação e coincide com o modelo de referência; a árvore é a alternativa interpretável.
+1. **Modelo entregue:** o Random Forest venceu a árvore por apenas +0,0011 de F1 macro na validação e coincide com o modelo de referência. No teste, medidos uma vez cada, os dois empatam (0,7675 × 0,7673), então a árvore é uma alternativa interpretável com o mesmo desempenho.
 2. **Etapa 9 (monitoramento ao vivo):** confirmar com os professores se o painel segue o da referência (malha pública do RIPE Atlas, API local) e se deve incluir o modo de simulação de eventos pedido no documento interdisciplinar.
 3. **Antecipação:** variáveis de tendência ou horizonte maior podem melhorar o recall nos inícios de FALHA (0,0195 no grupo contra 0,146 na referência).
 4. **Ruído do rótulo:** exigir persistência (por exemplo, 2 de 3 medições acima do P95) antes de marcar RISCO.
@@ -264,7 +267,7 @@ Os indicadores gerais são próximos. A diferença está na antecipação de fal
 |---|---|---|
 | Coleta (Tarefa 1) | `data/raw/` (420 JSON), `config/` (âncoras, medições, `tabela_desenho.csv`, `relatorio_qualidade_fluxos.csv`, `exclusoes_fluxos.csv`, `fluxos_modelagem.csv`, `parametros.json`), `data/interim/bruto_tabela.csv` | Este bruto |
 | Baseline e rótulo (Tarefa 2) | `baseline_por_fluxo.csv`, `dataset_final.csv`, `corte_temporal.json` | Estes rótulos e este corte |
-| Primeira árvore (Tarefa 3) | `modelos/arvore_T3.joblib` | Os erros da validação |
+| Primeira árvore (Tarefa 3) | `modelos/arvore_T3.joblib`, `modelos/arvore_T3_regras.txt`, figuras em `modelos/figuras/` | Os erros da validação |
 | Ajuste (Tarefa 4) | `modelos/modelo_T4.joblib`, `grade_busca.csv`, `tabela_T3_T4.csv` | Este modelo |
 | Modelo final (Tarefa 5) | `modelo_final_congelado.json`, `teste_unico.json`, `ficha_do_modelo.json`, `requirements.txt` | — |
 
