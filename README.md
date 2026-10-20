@@ -19,5 +19,5 @@ As evidências individuais de cada integrante estão em [prints](prints/).
 - Geziel de Andrade
 - Hendrick Ambriola
 - Isaac William Braz
-- Victor Gabriel Alves
+
 Centro Universitário Braz Cubas · 2º semestre de 2026
