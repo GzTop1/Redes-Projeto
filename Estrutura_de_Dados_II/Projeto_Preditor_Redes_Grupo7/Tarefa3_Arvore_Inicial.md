@@ -60,6 +60,14 @@
 
 **Leitura:** a raiz pergunta se o fluxo **já está** acima do P95 nas últimas medições. A árvore aprende persistência: se o fluxo está degradado agora, tende a continuar.
 
+**Representação visual e textual da árvore (notebook, seções 3.0 e 3.2-B):**
+
+| Arquivo | Conteúdo |
+|---|---|
+| `ripe_atlas_fluxos/modelos/figuras/arvore_ilustrativa.jpg` | Árvore ilustrativa (`max_depth` 3), só para mostrar como as perguntas se encadeiam; **não é o modelo** |
+| `ripe_atlas_fluxos/modelos/figuras/arvore_T3_niveis_1a3.jpg` | Árvore oficial T3 desenhada nos 3 primeiros níveis (verde/amarelo/vermelho por classe) |
+| `ripe_atlas_fluxos/modelos/arvore_T3_regras.txt` | Todas as regras da árvore T3 em texto (`export_text`, 658 linhas, com as amostras de treino de cada folha) |
+
 ## 3. Leitura do erro
 
 No bloco de **validação**. O teste ficou fechado até a Tarefa 5.
@@ -85,6 +93,8 @@ No bloco de **validação**. O teste ficou fechado até a Tarefa 5.
 | FALHA | 0,8594 | 0,7046 | 0,7744 | 1.527 |
 
 **F1 macro = 0,7691.** Persistência (repetir a classe atual) na mesma validação: **0,7261**.
+
+A matriz desenhada e as quatro melhores combinações da grade estão em `ripe_atlas_fluxos/modelos/figuras/busca_arvore.jpg` (seção 3.2-B do notebook).
 
 **Fatias:**
 
@@ -122,7 +132,6 @@ Treinada no mesmo treino, com a profundidade e a folha mínima da árvore oficia
 | Geziel de Andrade | Não atuei diretamente nesta tarefa (responsável: Fernanda). | — | — |
 | Hendrick Ambriola | Não atuei diretamente nesta tarefa (responsável: Fernanda). | — | — |
 | Davi Gabriel Borges dos Santos | Não atuei diretamente nesta tarefa (responsável: Fernanda). | — | — |
-| Victor Gabriel Alves | Não atuei diretamente nesta tarefa (responsável: Fernanda). | — | — |
 
 **Link do board:** _https://github.com/users/GzTop1/projects/1_
 
