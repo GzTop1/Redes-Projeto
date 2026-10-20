@@ -5,7 +5,7 @@
 **Modelo desta disciplina:** árvore de decisão. Nesta tarefa não se treina árvore.
 
 **Equipe:** Grupo 7  
-**Integrantes:** Isaac William Braz, Fernanda Akemi Martins Sanpei, Geziel de Andrade, Hendrick Ambriola, Davi Gabriel Borges dos Santos, Victor Gabriel Alves  
+**Integrantes:** Isaac William Braz, Fernanda Akemi Martins Sanpei, Geziel de Andrade, Hendrick Ambriola, Davi Gabriel Borges dos Santos  
 **Scrum Master da tarefa:** Isaac William Braz  
 **Repositório GitHub:** [Redes-Projeto](https://github.com/GzTop1/Redes-Projeto)
 
@@ -82,7 +82,7 @@ Regras da coleta:
 
 **Decisão documentada:** nenhum destino foi trocado depois da coleta. Cada fluxo só entra em um período com cobertura mínima de 80% (2.016 de 2.520 execuções) e, no Período A, com pelo menos 30 TTL válidos. Os fluxos que não atingem esse mínimo são **excluídos**, com o motivo registrado em `config/exclusoes_fluxos.csv`. Resultado: 131 fluxos na classe `A+B` seguem para a modelagem; os destinos 4227 (Changhua/TW) e 4862 (Antananarivo/MG) ficaram sem fluxo utilizável e foram mantidos como exclusão declarada, não substituídos.
 
-**Evidências (notebook, commit, trecho do config):** notebook `Projeto_Preditor_Redes_Grupo7/Projeto_Preditor_Falhas_PPF.ipynb`, seções 1.1 a 1.6-A; `config/correcoes_com_fonte_professora.csv`; `config/evidencias.jsonl`.
+**Evidências (notebook, commit, trecho do config):** notebook `Estrutura_de_Dados_II/Projeto_Preditor_Redes_Grupo7/Projeto_Preditor_Falhas_PPF.ipynb`, seções 1.1 a 1.6-A; `config/correcoes_com_fonte_professora.csv`; `config/evidencias.jsonl`.
 
 ## 3. Relatório de qualidade — ainda sem classe
 
@@ -116,12 +116,11 @@ Regras da coleta:
 | Geziel de Andrade | Colaboração na estruturação do repositório e suporte à integração com o GitHub. | — | — |
 | Hendrick Ambriola | Preparação para a transição dos dados para a etapa de modelagem (Tarefa 4). | — | — |
 | Davi Gabriel Borges dos Santos | Acompanhamento do pipeline de baseline e estruturação da Tarefa 2. | — | — |
-| Victor Gabriel Alves | Apoio na validação e conferência dos relatórios de qualidade e artefatos. | — | — |
 
 ## 6. Evidências gerais
 
 - Link do repositório: *https://github.com/GzTop1/Redes-Projeto*
-- Link do dicionário v0.1: notebook `Projeto_Preditor_Redes_Grupo7/Projeto_Preditor_Falhas_PPF.ipynb`, seção 1.7
+- Link do dicionário v0.1: notebook `Estrutura_de_Dados_II/Projeto_Preditor_Redes_Grupo7/Projeto_Preditor_Falhas_PPF.ipynb`, seção 1.7
 - Link dos commits: *https://github.com/GzTop1/Redes-Projeto/commits/main*
 
 ---
