@@ -1,0 +1,4 @@
+modelo,F1 macro,recall FALHA,recall RISCO,F1 macro (transições),recall FALHA (início de falha)
+Persistência (classe atual),0.7261,0.7341,0.4975,0.0,0.0
+T3: árvore,0.7691,0.7046,0.4213,0.2122,0.0049
+T4: random_forest,0.7702,0.7073,0.419,0.2192,0.0074

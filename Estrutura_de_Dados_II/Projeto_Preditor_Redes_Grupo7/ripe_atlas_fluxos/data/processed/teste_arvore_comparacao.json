@@ -1,0 +1,59 @@
+{
+  "aberto_em_utc": "2026-10-20T15:19:44+00:00",
+  "finalidade": "comparação com o modelo final; não altera a escolha feita na validação",
+  "modelo": {
+    "familia": "arvore_decisao",
+    "params": {
+      "max_depth": 12,
+      "min_samples_leaf": 100,
+      "class_weight": null
+    }
+  },
+  "n": 40453,
+  "metricas": {
+    "n": 40453,
+    "por_classe": {
+      "OK": {
+        "precisao": 0.9362271805273834,
+        "recall": 0.995227553690021,
+        "f1": 0.964826221466596,
+        "suporte": 34783
+      },
+      "RISCO": {
+        "precisao": 0.8498498498498499,
+        "recall": 0.46765816808309724,
+        "f1": 0.6033196284452566,
+        "suporte": 4236
+      },
+      "FALHA": {
+        "precisao": 0.8256320836965998,
+        "recall": 0.6603905160390516,
+        "f1": 0.7338240991863618,
+        "suporte": 1434
+      }
+    },
+    "macro_f1": 0.7673233163660714,
+    "acuracia": 0.9281141077299582,
+    "matriz": [
+      [
+        34617,
+        116,
+        50
+      ],
+      [
+        2105,
+        1981,
+        150
+      ],
+      [
+        253,
+        234,
+        947
+      ]
+    ],
+    "recall_falha": 0.6603905160390516,
+    "recall_risco": 0.46765816808309724,
+    "f1_falha": 0.7338240991863618
+  },
+  "balanced_accuracy": 0.7077587459373901
+}
