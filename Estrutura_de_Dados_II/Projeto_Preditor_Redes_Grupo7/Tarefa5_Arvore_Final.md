@@ -33,7 +33,7 @@ Não há tarefa seguinte.
 
 - [x] Família, parâmetros e colunas
 - [x] Confirmação por código de que país, IP, rota e RTT absoluto não estão no modelo
-- [ ] Três regras em português: não se aplica ao Random Forest. Como referência legível, ficam as regras da árvore da Tarefa 3 (diário da Tarefa 3, seção 2).
+- [ ] Três regras em português: não se aplica ao Random Forest. Como referência legível, ficam as regras da árvore da Tarefa 3 (diário da Tarefa 3, seção 2), que no mesmo teste ficou a 0,0002 de F1 macro do Random Forest (seção 2). Árvore desenhada em `ripe_atlas_fluxos/modelos/figuras/arvore_T3_niveis_1a3.jpg` e regras completas em `ripe_atlas_fluxos/modelos/arvore_T3_regras.txt`.
 
 O modelo final segue a escolha do modelo de referência da professora (`rf_v1.0.0`): mesma família e mesmos hiperparâmetros.
 
@@ -72,6 +72,20 @@ Fluxos conhecidos, último dia do Período B (de t0 + 6 dias + 60 min até 05/10
 | Modelo final | **0,7675** |
 | Persistência (repetir a classe atual) | 0,7302 |
 | Classe majoritária ("sempre OK") | 0,3082 |
+
+**Árvore × Random Forest no mesmo teste (notebook, seção 5.2-B).** Como no notebook didático da professora, a árvore da Tarefa 3 também foi medida no teste, **uma única vez e só para comparação**. A escolha do modelo final já tinha sido feita na validação, e o resultado do Random Forest não mudou. O resultado da árvore está em `data/processed/teste_arvore_comparacao.json`, e a tabela em `data/processed/comparacao_arvore_rf.csv`.
+
+| | Árvore de decisão (T3) | Random Forest (modelo final) |
+|---|---|---|
+| F1 macro na validação | 0,7691 | 0,7702 |
+| F1 macro no teste | 0,7673 | **0,7675** |
+| Recall de FALHA no teste | **0,6604** | 0,6597 |
+| Recall de RISCO no teste | 0,4677 | **0,4681** |
+| Acurácia no teste | 0,9281 | 0,9285 |
+
+Os dois ficam praticamente empatados no teste (diferença de 0,0002 de F1 macro). O limite do desempenho está nos dados (fronteira difusa de RISCO e inícios de falha sem sinal), não no algoritmo. Na prática, a **árvore de decisão entrega o mesmo resultado com regras legíveis**. As matrizes das duas no teste estão em `ripe_atlas_fluxos/modelos/figuras/matrizes_teste.jpg`.
+
+**Importância das variáveis** (`ripe_atlas_fluxos/modelos/figuras/importancia_variaveis.jpg`): no Random Forest, as três mais importantes são `razao_rtt_p99`, `razao_rtt_p95` e `n_rtt_acima_p95_w6`, todas relativas ao baseline do próprio fluxo. Nenhuma variável de rota, país ou RTT absoluto entra no modelo.
 
 **Recall de FALHA e troca RISCO ↔ FALHA:** recall de FALHA de 0,6597. Das 1.434 FALHAs reais, 235 foram previstas como RISCO e 253 como OK. No sentido inverso, 156 RISCOs viraram FALHA. O erro dominante continua sendo RISCO previsto como OK (2.097).
 
@@ -141,10 +155,11 @@ Fluxos conhecidos, último dia do Período B (de t0 + 6 dias + 60 min até 05/10
 | Modelo | Random Forest, 200 árvores, `max_depth` None, `min_samples_leaf` 5, `max_features` sqrt, semente 42 |
 | Validação | F1 macro 0,7702 (árvore T3: 0,7691; persistência: 0,7261) |
 | Teste (uma vez) | F1 macro 0,7675 (persistência 0,7302; classe majoritária 0,3082); balanced accuracy 0,7078; recall de FALHA 0,6597 |
+| Árvore T3 no teste (só comparação) | F1 macro 0,7673; recall de FALHA 0,6604 |
 | Fluxos não vistos | 13 fluxos: F1 macro 0,6275 (persistência 0,6207); faixa curta sem detecção |
 | Detector ou preditor | Detector suavizado: recall de 0,0195 nos inícios de FALHA |
 | O que ele não faz | Não classifica distância. Não opera em fluxo sem baseline próprio. Não antecipa falhas de forma confiável. |
-| Como reproduzir | `requirements.txt` (pandas 2.2.3, numpy 2.1.3, requests 2.32.4, scikit-learn 1.6.1, joblib 1.6.0); notebook `Projeto_Preditor_Redes_Grupo7/Projeto_Preditor_Falhas_PPF.ipynb` executado de cima para baixo; `config/` (`parametros.json`, `tabela_desenho.csv`, `fluxos_modelagem.csv`) e `data/processed/` (`corte_temporal.json`, `modelo_final_congelado.json`, `ficha_do_modelo.json`) |
+| Como reproduzir | `requirements.txt` (pandas 2.2.3, numpy 2.1.3, requests 2.32.4, scikit-learn 1.6.1, joblib 1.6.0); notebook `Estrutura_de_Dados_II/Projeto_Preditor_Redes_Grupo7/Projeto_Preditor_Falhas_PPF.ipynb` executado de cima para baixo; `config/` (`parametros.json`, `tabela_desenho.csv`, `fluxos_modelagem.csv`) e `data/processed/` (`corte_temporal.json`, `modelo_final_congelado.json`, `ficha_do_modelo.json`) |
 
 **Dicionário v0.4:** as 21 colunas acima, mais `alvo` (classe da próxima medição). Só auditoria: `classe_atual`, `rtt_ms`, `id_fluxo`, `anchor_id`, `probe_id`, `timestamp`, `split`. Fora do modelo: país, IP, rota, faixa de distância, ASN e RTT absoluto.
 
@@ -159,7 +174,6 @@ Fluxos conhecidos, último dia do Período B (de t0 + 6 dias + 60 min até 05/10
 | Geziel de Andrade | Modelo congelado antes do teste; teste único (matriz, F1, balanced accuracy, comparação com persistência e classe majoritária); fatias de transição e início de falha; fluxos não vistos; limitações; ficha do modelo e dicionário v0.4. | Abrir o teste uma única vez e interpretar o resultado contra a persistência. | Declarar as limitações com clareza e manter a ficha alinhada às colunas usadas. |
 | Hendrick Ambriola | Não atuei diretamente nesta tarefa (responsável: Geziel). | — | — |
 | Davi Gabriel Borges dos Santos | Não atuei diretamente nesta tarefa (responsável: Geziel). | — | — |
-| Victor Gabriel Alves | Não atuei diretamente nesta tarefa (responsável: Geziel). | — | — |
 
 **Link do board:** _https://github.com/users/GzTop1/projects/1_
 
