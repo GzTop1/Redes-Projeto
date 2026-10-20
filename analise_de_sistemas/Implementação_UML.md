@@ -17,7 +17,6 @@
 | Geziel de Andrade |
 | Hendrick Ambriola |
 | Isaac William Braz |
-| Victor Gabriel Alves |
 
 ---
 
