@@ -154,6 +154,8 @@ Fluxo com pelo menos 50% das linhas acima do P99 tem baseline desatualizado e fi
 
 Datas exatas em `data/processed/corte_temporal.json`.
 
+**Distribuição das classes (notebook, seção 2.5-B):** no dataset final, 86,79% OK, 9,15% RISCO e 4,06% FALHA. Um classificador que respondesse sempre OK teria acurácia perto de 87% sem detectar nenhuma falha; por isso a escolha do modelo usa o F1 macro e o recall de FALHA. Gráfico em `ripe_atlas_fluxos/modelos/figuras/distribuicao_classes.jpg`.
+
 ## 6. Scrum e diário
 
 - [X] Board atualizado
@@ -167,7 +169,6 @@ Datas exatas em `data/processed/corte_temporal.json`.
 | Geziel de Andrade | Não atuei diretamente nesta tarefa (responsável: Davi). | — | — |
 | Hendrick Ambriola | Não atuei diretamente nesta tarefa (responsável: Davi). | — | — |
 | Davi Gabriel Borges dos Santos | Inspeção do bruto; ficha de baseline P95/P99 só com o Período A (mínimo de 30 RTT) e conferência com interpolação manual; métricas relativas do Período B; rótulo na ordem da tabela; alvo t+1, 21 variáveis, corte com embargo e sorteio dos fluxos não vistos; dicionário v0.2. | Garantir que o percentil conferido à mão batesse com o do numpy e que nenhuma janela usasse medições do bloco seguinte. | Manter a ficha congelada e o corte único para as Tarefas 3 a 5. |
-| Victor Gabriel Alves | Não atuei diretamente nesta tarefa (responsável: Davi). | — | — |
 
 ---
 
