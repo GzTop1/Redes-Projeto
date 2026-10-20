@@ -92,12 +92,14 @@ Pela regra de seleção (maior F1 macro, depois menor gap), o escolhido é o **R
 | RISCO | 0,8854 | 0,4190 | 0,5688 |
 | FALHA | 0,8592 | 0,7073 | 0,7759 |
 
+A matriz desenhada e as quatro melhores combinações do Random Forest estão em `ripe_atlas_fluxos/modelos/figuras/busca_random_forest.jpg` (seção 4.3-B do notebook), ao lado da explicação de bagging e `max_features`.
+
 **Leitura do ganho:** de T3 para T4, o ganho é de **+0,0011** em F1 macro, dentro do que se espera de variação entre modelos. O Random Forest também tem gap maior (0,052 contra 0,023). Contra a persistência, os dois modelos ganham cerca de +0,044, porque erram menos ao manter a classe. Mas nenhum dos dois resolve o erro principal: nas transições o F1 macro fica em cerca de 0,21, e quase nenhum início de FALHA é antecipado. A persistência tem até recall de FALHA maior (0,734) que os modelos; a vantagem deles está na precisão.
 
 ## 4. Revisão com o docente
 
-**O que foi mostrado:** _(preencher)_  
-**O que foi pedido para ajustar antes da Tarefa 5:** _(preencher)_
+**O que foi mostrado:** o notebook com as Tarefas 3 e 4 no GitHub: árvore CART escolhida na validação (`max_depth` 12, 220 folhas, F1 macro 0,7691), experimentos de uma mudança por vez, grade das três famílias (Naive Bayes, árvore e Random Forest) e a tabela T3 → T4 com o Random Forest escolhido (F1 macro 0,7702).
+**O que foi pedido para ajustar antes da Tarefa 5:** a professora enviou o notebook didático `Arvore_e_random_forest_didatico.ipynb` como referência. Comparamos com o nosso: as variáveis, as grades, a divisão temporal e o critério de escolha (F1 macro na validação) já eram os mesmos. Com base nele, acrescentamos a distribuição das classes, a árvore ilustrativa e a árvore T3 desenhada, as matrizes de confusão e as melhores combinações de cada família, a comparação árvore × Random Forest também no teste e a importância das variáveis (figuras em `ripe_atlas_fluxos/modelos/figuras/`). O modelo escolhido e os números não mudaram.
 
 ### Dicionário de dados v0.3
 
@@ -108,6 +110,7 @@ As **variáveis não mudam** (as mesmas 21 da v0.2). Entram os artefatos do mode
 | `grade_busca.csv` | uma linha por candidato: família, parâmetros, F1 macro de treino e validação, gap, recalls |
 | `modelo_T4.joblib` | modelo escolhido, lista de variáveis, família e parâmetros |
 | `tabela_T3_T4.csv` | persistência, T3 e T4 lado a lado |
+| `modelos/figuras/*.jpg` | distribuição das classes, árvore ilustrativa, árvore T3, melhores combinações e matrizes da árvore e do Random Forest |
 
 Continuam proibidos: país, IP, rota, `id_fluxo` e RTT absoluto.
 
@@ -122,7 +125,6 @@ Continuam proibidos: país, IP, rota, `id_fluxo` e RTT absoluto.
 | Geziel de Andrade | Não atuei diretamente nesta tarefa (responsável: Hendrick). | — | — |
 | Hendrick Ambriola | Diagnóstico dos erros da T3; experimentos com uma mudança por vez (entropia, folha mínima, profundidade, poda, `class_weight`); grade completa de Naive Bayes, árvore e Random Forest; tabela T3 → T4; dicionário v0.3. | Ligar cada mudança a um erro. Aceitar que nenhuma mudança da árvore trouxe ganho. | Manter a escolha só pela validação e apresentar o que foi descartado. |
 | Davi Gabriel Borges dos Santos | Não atuei diretamente nesta tarefa (responsável: Hendrick). | — | — |
-| Victor Gabriel Alves | Não atuei diretamente nesta tarefa (responsável: Hendrick). | — | — |
 
 **Link do board:** _https://github.com/users/GzTop1/projects/1_
 
