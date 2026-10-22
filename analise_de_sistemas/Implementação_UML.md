@@ -8,7 +8,9 @@
 
 **Curso:** Ciência da Computação – 4º semestre
 
-**Equipe:** DSFSGAHAIBVA · **Período:** 15/09/2026 a 11/11/2026
+**Equipe:** DSFSGAHAIB · **Período:** 15/09/2026 a 11/11/2026
+
+**Product Owner:** Fernanda Akemi Martins Sanpei
 
 | Integrantes |
 |---|
@@ -35,24 +37,25 @@
 
 ## 1. Situação-problema
 
-Equipes de operação de rede precisam perceber a degradação de um caminho antes que ela se transforme em indisponibilidade. Hoje o acompanhamento costuma ser reativo: o problema só é tratado quando o usuário reclama ou quando o serviço já caiu. Medições simples de ping – latência (RTT), perda de pacotes, variação da latência (jitter) e TTL – contêm sinais precoces dessa degradação, mas analisá-las manualmente, fluxo a fluxo, é inviável.
+Uma instituição de ensino deseja desenvolver um sistema web para auxiliar no gerenciamento de sua biblioteca. Atualmente, parte do controle do acervo e dos empréstimos é realizada de maneira manual, dificultando a consulta de informações e o acompanhamento da circulação dos livros.
 
-O projeto **Preditor de Falhas** propõe um sistema que usa as medições públicas de ping da plataforma **RIPE Atlas** (sondas espalhadas pelo mundo enviando pings para servidores âncora a cada 240 segundos) para classificar cada fluxo sonda → âncora em **OK**, **RISCO** ou **FALHA** e prever a classe da próxima medição. Cada fluxo é comparado com o seu próprio comportamento normal (*baseline*), calculado em uma semana de referência, e a predição é feita por um modelo de aprendizado de máquina (**Random Forest**), mantendo-se uma **árvore de decisão** como versão interpretável.
+O sistema deverá, inicialmente, contemplar funcionalidades como:
 
-O sistema deverá contemplar as seguintes funcionalidades:
-
-- cadastro dos fluxos monitorados (sonda, âncora e medição do RIPE Atlas);
-- configuração dos parâmetros de medição (períodos, limiares e janelas);
-- coleta automática das medições de ping na API pública do RIPE Atlas;
-- armazenamento do histórico bruto e tratado das métricas;
-- cálculo do baseline de cada fluxo e rotulagem das medições (OK, RISCO ou FALHA);
-- predição da classe da próxima medição;
-- painel de monitoramento com status, gráficos, alertas e histórico;
-- simulação de eventos de falha para demonstração, sempre identificados como simulados.
+- cadastro de alunos;
+- cadastro de livros;
+- consulta ao acervo;
+- registro de empréstimos;
+- registro de devoluções;
+- controle de atrasos;
+- reserva de livros;
+- consulta do histórico de empréstimos;
+- relatórios administrativos.
 
 ## 2. Implementação dos diagramas UML
 
 Os diagramas a seguir foram elaborados a partir do sistema realmente desenvolvido no projeto interdisciplinar (notebook de coleta, baseline, rotulagem e treinamento do modelo e painel de monitoramento). Todos foram produzidos em **PlantUML** e seguem a notação UML 2. Os códigos-fonte estão na pasta [`uml/`](uml/).
+
+Por orientação da disciplina, os diagramas são entregues em **JPG** (pasta [`img/`](img/)) e reunidos em um único **PDF** ([`img/Diagramas_UML_Preditor_de_Falhas.pdf`](img/Diagramas_UML_Preditor_de_Falhas.pdf)).
 
 ## 3. Etapa 1 – Requisitos (Funcionais e Não Funcionais)
 
@@ -65,7 +68,7 @@ Descrevem **o que** o sistema deve fazer.
 | RF001 | Cadastrar Fluxos Monitorados | Registrar os pares sonda → âncora (`probe_id`, `anchor_id` e `msm_id`) que fazem parte do escopo de monitoramento. |
 | RF002 | Coletar Dados de Telemetria (ICMP) | Obter na API pública do RIPE Atlas os resultados de ping de cada fluxo (RTT mínimo, médio e máximo, pacotes enviados e recebidos, TTL) a cada 240 s. |
 | RF003 | Armazenar Histórico de Métricas | Guardar o JSON bruto da API e a tabela tratada (uma linha por fluxo e horário), incluindo perda e jitter calculados. |
-| RF004 | Executar Algoritmo de Predição | Calcular as 21 variáveis relativas ao baseline e prever a classe da próxima medição com o modelo Random Forest (árvore de decisão mantida como versão interpretável). |
+| RF004 | Executar Algoritmo de Predição | Calcular as 21 variáveis relativas ao baseline e prever a classe da próxima medição com o modelo Random Forest (árvore de decisão mantida como versão interpretável, com o mesmo desempenho no teste). |
 | RF005 | Visualizar Alertas e Histórico (Dashboard) | Exibir em painel o status OK/RISCO/FALHA de cada fluxo, gráficos de latência e perda, alertas e histórico. |
 | RF006 | Simular Eventos de Falha | Injetar perda de pacotes ou aumento de latência para demonstrar a reação do modelo, marcando a medição como SIMULADA. |
 | RF007 | Configurar Parâmetros de Medição | Definir o período de baseline, os limiares de classificação (P95, P99 e perda), o tamanho das janelas e o intervalo de consulta. |
@@ -91,7 +94,7 @@ Descrevem **como** o sistema deve se comportar (qualidade, restrições e segura
 
 ### 4.1 Contexto do projeto
 
-O Preditor de Falhas (Network Failure Predictor) é o projeto interdisciplinar que detecta sinais precoces de degradação e indisponibilidade em caminhos de rede. O sistema consome as medições públicas de ping (ICMP) da plataforma RIPE Atlas, organiza-as por fluxo (sonda → âncora), compara cada medição com o baseline do próprio fluxo e classifica o estado em OK, RISCO ou FALHA. Um modelo Random Forest prevê a classe da próxima medição, e uma árvore de decisão é mantida como versão interpretável. Os resultados são apresentados em um painel de monitoramento.
+O Preditor de Falhas (Network Failure Predictor) é o projeto interdisciplinar que detecta sinais precoces de degradação e indisponibilidade em caminhos de rede. O sistema consome as medições públicas de ping (ICMP) da plataforma RIPE Atlas, organiza-as por fluxo (sonda → âncora), compara cada medição com o baseline do próprio fluxo e classifica o estado em OK, RISCO ou FALHA. Um modelo Random Forest prevê a classe da próxima medição, e uma árvore de decisão é mantida como versão interpretável: no teste, as duas ficaram praticamente empatadas (F1 macro de 0,7675 e 0,7673). Os resultados são apresentados em um painel de monitoramento.
 
 **Conceitos e elementos:** o diagrama de casos de uso mostra o que o sistema oferece a cada ator, sem detalhar como é feito. Seus elementos são os **atores** (pessoas ou sistemas externos que interagem com o sistema), os **casos de uso** (elipses, cada uma uma funcionalidade) e a **fronteira do sistema** (retângulo).
 
@@ -121,7 +124,7 @@ O Preditor de Falhas (Network Failure Predictor) é o projeto interdisciplinar q
 
 ### 4.4 Diagrama
 
-![Figura 1 – Diagrama de Casos de Uso do Preditor de Falhas](img/01_casos_uso.png)
+![Figura 1 – Diagrama de Casos de Uso do Preditor de Falhas](img/01_casos_uso.jpg)
 
 *Figura 1 – Diagrama de Casos de Uso do Preditor de Falhas · código: [`uml/01_casos_uso.puml`](uml/01_casos_uso.puml)*
 
@@ -139,7 +142,7 @@ O diagrama de classes representa a estrutura estática do sistema: as classes, s
 | `Baseline` | Comportamento normal do fluxo no Período A (P95/P99 de RTT e jitter, TTL de referência); só é válido com pelo menos 30 RTT válidos. |
 | `Rotulador` | Aplica a regra que transforma uma medição em OK, RISCO ou FALHA. |
 | `HistoricoFluxo` e `ExtratorFeatures` | Guardam as últimas 12 medições e calculam as 21 variáveis relativas ao baseline (janelas de 3, 6 e 12 medições). |
-| `Preditor` | Modelo treinado (Random Forest) que prevê a classe da próxima medição, gerando uma `Previsao` e, quando necessário, um `Alerta`. |
+| `Preditor` | Modelo treinado (Random Forest; a árvore de decisão é a alternativa interpretável) que prevê a classe da próxima medição, gerando uma `Previsao` e, quando necessário, um `Alerta`. |
 | `ColetorRIPE`, `SimuladorEventos` e `Dashboard` | Coletam medições reais, criam medições simuladas e coordenam a exibição no painel. |
 
 **Relacionamentos:**
@@ -150,7 +153,7 @@ O diagrama de classes representa a estrutura estática do sistema: as classes, s
 - **Dependência** (linha tracejada) – uma classe usa ou cria objetos de outra;
 - **Enumerações** – `Classe` (OK, RISCO, FALHA) e `Origem` (REAL, SIMULADA) para valores fixos.
 
-![Figura 2 – Diagrama de Classes do Preditor de Falhas](img/02_classes.png)
+![Figura 2 – Diagrama de Classes do Preditor de Falhas](img/02_classes.jpg)
 
 *Figura 2 – Diagrama de Classes do Preditor de Falhas · código: [`uml/02_classes.puml`](uml/02_classes.puml)*
 
@@ -160,7 +163,7 @@ O diagrama de sequência mostra a troca de mensagens entre objetos ao longo do t
 
 **Elementos:** linhas de vida (ator e participantes), mensagens síncronas (seta cheia) e de retorno (seta tracejada), numeradas na ordem em que acontecem; fragmentos combinados **loop** (repetição a cada medição), **alt** (alternativa entre alerta de FALHA e atualização normal) e **opt** (simulação opcional acionada pelo analista).
 
-![Figura 3 – Diagrama de Sequência: monitoramento e simulação](img/03_sequencia.png)
+![Figura 3 – Diagrama de Sequência: monitoramento e simulação](img/03_sequencia.jpg)
 
 *Figura 3 – Diagrama de Sequência: monitoramento e simulação · código: [`uml/03_sequencia.puml`](uml/03_sequencia.puml)*
 
@@ -169,7 +172,7 @@ O diagrama de sequência mostra a troca de mensagens entre objetos ao longo do t
 O diagrama de atividade modela o fluxo de trabalho do monitoramento, com **raias** (*swimlanes*) que separam o que é feito pelo Analista de TI, pelo sistema e pela API RIPE Atlas. Elementos: nó inicial (círculo cheio), ações (retângulos arredondados), decisões (losangos), laço de repetição e nó final.
 
 <p align="center">
-  <img src="img/04_atividade_monitoramento.png" alt="Figura 4 – Diagrama de Atividade: monitoramento de um fluxo" width="600">
+  <img src="img/04_atividade_monitoramento.jpg" alt="Figura 4 – Diagrama de Atividade: monitoramento de um fluxo" width="600">
 </p>
 
 *Figura 4 – Diagrama de Atividade: monitoramento de um fluxo · código: [`uml/04_atividade_monitoramento.puml`](uml/04_atividade_monitoramento.puml)*
@@ -185,7 +188,7 @@ A Figura 5 detalha a ação **“Aplicar regra de rotulagem”**: as condições
 | 5 | Jitter > P95 do fluxo | RISCO |
 | 6 | Nenhuma das anteriores | OK |
 
-![Figura 5 – Diagrama de Atividade: regra de rotulagem OK/RISCO/FALHA](img/05_atividade_regra.png)
+![Figura 5 – Diagrama de Atividade: regra de rotulagem OK/RISCO/FALHA](img/05_atividade_regra.jpg)
 
 *Figura 5 – Diagrama de Atividade: regra de rotulagem OK/RISCO/FALHA · código: [`uml/05_atividade_regra.puml`](uml/05_atividade_regra.puml)*
 
@@ -194,12 +197,13 @@ A Figura 5 detalha a ação **“Aplicar regra de rotulagem”**: as condições
 ```
 analise_de_sistemas/
 ├── Implementação_UML.md                          ← este documento
-├── img/                               ← diagramas renderizados (PNG)
-│   ├── 01_casos_uso.png
-│   ├── 02_classes.png
-│   ├── 03_sequencia.png
-│   ├── 04_atividade_monitoramento.png
-│   └── 05_atividade_regra.png
+├── img/                               ← diagramas em JPG e todos juntos em PDF
+│   ├── 01_casos_uso.jpg
+│   ├── 02_classes.jpg
+│   ├── 03_sequencia.jpg
+│   ├── 04_atividade_monitoramento.jpg
+│   ├── 05_atividade_regra.jpg
+│   └── Diagramas_UML_Preditor_de_Falhas.pdf
 └── uml/                               ← código-fonte PlantUML
     ├── 01_casos_uso.puml
     ├── 02_classes.puml
