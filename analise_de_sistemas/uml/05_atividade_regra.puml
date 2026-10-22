@@ -1,0 +1,42 @@
+@startuml
+skinparam backgroundColor #FDF6E3
+skinparam defaultFontName DejaVu Sans
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam ArrowColor #333333
+skinparam ActorBorderColor #333333
+skinparam ActorBackgroundColor #F2F2F2
+skinparam UsecaseBorderColor #555555
+skinparam UsecaseBackgroundColor #F2F2F2
+skinparam ClassBorderColor #555555
+skinparam ClassBackgroundColor #FFFFFF
+skinparam ClassHeaderBackgroundColor #D9EAF7
+skinparam ParticipantBorderColor #555555
+skinparam ParticipantBackgroundColor #D9EAF7
+skinparam SequenceLifeLineBorderColor #888888
+skinparam ActivityBorderColor #555555
+skinparam ActivityBackgroundColor #FFFFFF
+skinparam ActivityDiamondBackgroundColor #FFF0D9
+skinparam ActivityDiamondBorderColor #555555
+skinparam SwimlaneBorderColor #888888
+skinparam NoteBackgroundColor #FFFBEA
+skinparam NoteBorderColor #AAAAAA
+skinparam PackageBorderColor #555555
+start
+:Receber medição e baseline do fluxo;
+if (Perda ≥ 2 de 3 pacotes?) then (sim)
+  :Classe = FALHA;
+elseif (RTT > P99 do fluxo?) then (sim)
+  :Classe = FALHA;
+elseif (Perda = 1 de 3 pacotes?) then (sim)
+  :Classe = RISCO;
+elseif (RTT > P95 do fluxo?) then (sim)
+  :Classe = RISCO;
+elseif (Jitter > P95 do fluxo?) then (sim)
+  :Classe = RISCO;
+else (nenhuma)
+  :Classe = OK;
+endif
+:Registrar a regra que disparou;
+stop
+@enduml
