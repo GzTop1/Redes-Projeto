@@ -2,7 +2,7 @@
 
 **Projeto:** Preditor de Falhas em Rede · Grupo 7
 **Product Owner:** Fernanda Akemi Martins Sanpei
-**Atualizado em:** 22/10/2026
+**Atualizado em:** 26/10/2026
 
 O Product Backlog é a lista **priorizada** de tudo o que o produto precisa ter. Quem decide a ordem é o Product Owner. Cada item é uma **história de usuário** no formato *Como [papel], quero [funcionalidade], para [benefício]*, com um **critério de aceite**: a condição que mostra que o item está pronto.
 
@@ -13,7 +13,7 @@ O Product Backlog é a lista **priorizada** de tudo o que o produto precisa ter.
 - **Professores (avaliação):** precisam do item como evidência de entrega.
 
 **Prioridade (MoSCoW):** **M** = obrigatório (*Must*) · **S** = importante (*Should*) · **C** = desejável (*Could*).
-**Situação:** ✅ concluído · 🔄 em andamento · ⏳ a fazer · ❓ a confirmar com os professores.
+**Situação:** ✅ concluído · 🔄 em andamento · ⏳ a fazer · ❌ não será feito.
 
 ---
 
@@ -33,24 +33,26 @@ O Product Backlog é a lista **priorizada** de tudo o que o produto precisa ter.
 | PB10 | M | Como **Analista de TI**, quero que o modelo final seja medido uma única vez em dados nunca vistos, para confiar no desempenho informado. | `teste_unico.json` gravado; comparação com persistência e classe majoritária; ficha do modelo. | RF004 | 4 | ✅ |
 | PB11 | S | Como **professores (avaliação)**, queremos ver a árvore desenhada, as matrizes e a comparação árvore × Random Forest, para avaliar a legibilidade e a escolha do modelo. | Figuras em JPG em `modelos/figuras/`; árvore e Random Forest comparados no teste. | RF004 | 5 | ✅ |
 | PB12 | M | Como **professores (avaliação)**, queremos os requisitos, os casos de uso e os diagramas UML do sistema, para avaliar a modelagem. | Documento UML com RF, RNF, casos de uso, classes, sequência e atividade (PDF/JPG). | Todos | 4 e 5 | ✅ |
-| PB13 | M | Como **equipe do projeto**, quero as regras de negócio documentadas, para que todos usem os mesmos critérios de classificação e o mesmo contrato de dados. | Documento de regras de negócio publicado. | Todos | 5 | 🔄 |
-| PB14 | M | Como **Analista de TI**, quero um painel que pingue 1 ou 2 IPs e classifique cada medição ao vivo, para acompanhar o estado da rede em tempo real. | Painel exibe OK/RISCO/FALHA por dispositivo a cada X segundos. | RF005 | 5 | ❓ |
-| PB15 | M | Como **Analista de TI**, quero ver o histórico das últimas medições de cada dispositivo, para perceber tendências. | Gráfico ou lista com as últimas N medições e classes. | RF005 | 5 | ❓ |
-| PB16 | M | Como **Analista de TI**, quero um botão para simular perda ou aumento de latência, para demonstrar a reação do modelo a RISCO e FALHA. | Evento injetado sob demanda, marcado como SIMULADO no painel. | RF006 | 5 | ❓ |
-| PB17 | M | Como **equipe do projeto**, quero um `log_rede.csv` no formato do contrato de dados, para treinar e validar o modelo com dados de rede local. | 100 a 150 registros com as 3 classes; colunas do contrato. | RF002 | 4 e 5 | ❓ |
-| PB18 | S | Como **equipe do projeto**, quero provocar cenários de falha (tráfego saturado, interface desligada, RTT alto), para garantir exemplos de RISCO e FALHA. | Cenários executados e descritos no documento de coleta. | RF006 | 4 e 5 | ❓ |
-| PB19 | C | Como **equipe do projeto**, quero um gerador de dataset sintético e a comparação sintético × real, para testar o modelo antes do log real. | Script com regras documentadas e relatório de comparação. | RF004 | 5 | ❓ |
+| PB13 | M | Como **equipe do projeto**, quero as regras de negócio documentadas, para que todos usem os mesmos critérios de classificação e o mesmo contrato de dados. | Documento de regras de negócio publicado. | Todos | 5 | ✅ |
+| PB14 | M | Como **Analista de TI**, quero um aplicativo com painel que envie ping (ICMP Echo Request/Reply) a 1 ou 2 hosts da rede local e classifique cada medição ao vivo, para acompanhar o estado da rede em tempo real. | Painel mostra latência, perda, jitter e o status OK/RISCO/FALHA de cada host a cada X segundos; o baseline do host é montado nos primeiros minutos de ping. | RF001, RF002, RF005 | 5 | ⏳ |
+| PB15 | M | Como **Analista de TI**, quero ver o histórico das últimas medições de cada host e receber um alerta quando houver risco ou falha, para perceber tendências. | Gráfico com as últimas N medições e classes; alerta destacado em RISCO e FALHA. | RF005 | 5 | ⏳ |
+| PB16 | M | Como **Analista de TI**, quero um botão para simular perda ou aumento de latência, para demonstrar a reação do modelo a RISCO e FALHA. | Evento injetado sob demanda, marcado como SIMULADO no painel. | RF006 | 5 | ⏳ |
+| PB17 | M | Como **Analista de TI**, quero que o aplicativo guarde o histórico de cada medição (horário, host, latência, perda, jitter, classe atual e classe prevista), para comparar a previsão com o que aconteceu de verdade. | Histórico consultável no painel, com as 3 classes, usado na tabela de validação. | RF003, RF005 | 5 | ⏳ |
+| PB18 | M | Como **equipe do projeto**, quero testar os cenários **normal, instável e indisponível** (rede saturada, RTT alto, interface desligada), para comparar a previsão com a ocorrência real. | Os 3 cenários executados, gravados para o vídeo e com a classe prevista × a ocorrida registrada. | RF006 | 5 e 6 | ⏳ |
+| PB19 | C | ~~Como **equipe do projeto**, quero um gerador de dataset sintético e a comparação sintético × real, para testar o modelo antes dos dados reais.~~ | Não será feito: o tutorial da Profa. Denise (26/10) não pede dados sintéticos; o papel de "simulado" passa a ser do Packet Tracer (PB22) e do botão de simulação (PB16). | — | — | ❌ |
 | PB20 | S | Como **Administrador de Rede**, quero configurar os parâmetros de medição (períodos, limiares, janelas), para adaptar o sistema a outra rede. | Parâmetros centralizados em `config/parametros.json`. | RF007 | 3 | ✅ |
 | PB21 | M | Como **professores (avaliação)**, queremos o relatório consolidado, os slides e a apresentação, para avaliar o projeto completo. | Relatório e slides entregues; apresentação entre 10 e 12/11. | — | 6 | ⏳ |
+| PB22 | M | Como **professores (avaliação)**, queremos uma rede local montada no **Cisco Packet Tracer** com arquitetura TCP/IP, para ver os protocolos de cada camada e o ICMP funcionando em ambiente simulado. | Topologia com PCs, switch, roteador e servidor (HTTP e DNS); ping entre os hosts; enlace derrubado mostrando a falha; protocolos por camada identificados. | RF002 | 6 | ⏳ |
+| PB23 | M | Como **professores (avaliação)**, queremos um vídeo de 10 a 15 minutos no YouTube (não listado) demonstrando e explicando o monitoramento e a predição, para avaliar o projeto em Redes (pedido da Profa. Denise). | Roteiro em 4 partes (introdução com RGMs, objetivo, Packet Tracer + projeto real, encerramento); apresentador no canto da tela; link entregue **só pelo Blackboard até 11/11/2026**. | Todos | 6 | ⏳ |
 
 ## Ordem de prioridade atual (definida pelo PO)
 
-Os itens concluídos saem do topo. A ordem do que falta é:
+Atualizada em 26/10 depois do tutorial da Profa. Denise, que confirmou o aplicativo com painel e definiu a entrega de Redes como um vídeo. Os itens concluídos saem do topo. A ordem do que falta é:
 
-1. **PB13** – Regras de negócio, porque fecham a parte de documentação de Análise.
-2. **PB17 e PB18** – `log_rede.csv` e cenários de falha, porque o retreino com dados de rede local depende deles.
-3. **PB14, PB15 e PB16** – Painel ao vivo, histórico e simulação, a parte demonstrada na apresentação.
-4. **PB19** – Gerador sintético e comparação, se os professores confirmarem que ainda vale.
-5. **PB21** – Relatório consolidado, slides e ensaio.
+1. **PB14, PB15 e PB16** – Aplicativo com painel, histórico, alertas e simulação. Tudo o que vem depois depende dele funcionando.
+2. **PB17 e PB18** – Histórico das medições no aplicativo e os testes nos cenários normal, instável e indisponível, gravados para o vídeo.
+3. **PB22** – Rede local no Packet Tracer (parte simulada do vídeo).
+4. **PB23** – Roteiro, gravação e entrega do vídeo de Redes. **Prazo final: 11/11/2026, sem prorrogação.** Meta interna: gravar até 08/11.
+5. **PB21** – Relatório consolidado, slides e ensaio da apresentação (10 a 12/11).
 
-> Os itens marcados com ❓ seguem a proposta oficial (ping na rede local). O grupo usou o RIPE Atlas no modelo; a necessidade desses itens está sendo confirmada com os professores. Se a resposta mudar o escopo, o PO reordena o backlog.
+> **Entrega final geral do projeto (tutorial da Profa. Denise):** protótipo funcional + documentação + testes + link do vídeo demonstrativo.
