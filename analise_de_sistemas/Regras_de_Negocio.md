@@ -3,7 +3,7 @@
 **Projeto:** Preditor de Falhas em Rede (Network Failure Predictor) · Grupo 7
 **Disciplina:** Análise e Projeto de Sistemas – Prof. Luís Ricardo (interdisciplinar com Estrutura de Dados II e Redes de Computadores)
 **Product Owner:** Fernanda Akemi Martins Sanpei
-**Fontes:** RFC do projeto, notebook `Projeto_Preditor_Falhas_PPF.ipynb` e proposta oficial do projeto interdisciplinar
+**Fontes:** RFC do projeto, notebook `Projeto_Preditor_Falhas_PPF.ipynb` e proposta oficial do projeto interdisciplinar e tutorial de Redes da Profa. Denise (26/10)
 
 ---
 
@@ -33,7 +33,7 @@ Cada regra tem um código (**RN001**, **RN002**…) para ser citada nos requisit
 
 ### 3.1 Contrato oficial do projeto
 
-A proposta interdisciplinar trava, antes de qualquer código, o formato do log de rede. **Todo arquivo de log**, real ou sintético, deve ter exatamente estas colunas:
+A proposta interdisciplinar trava, antes de qualquer código, o formato dos dados de rede. **Todo conjunto de medições** usado pelo sistema deve ter exatamente estas colunas:
 
 | Coluna | Tipo | Unidade | Descrição |
 |---|---|---|---|
@@ -69,7 +69,7 @@ O modelo foi treinado com a tabela de trabalho do RIPE Atlas. Cada coluna do con
 | **RN005** | **Perda** = (pacotes enviados − recebidos) ÷ enviados × 100, limitada entre 0 e 100. |
 | **RN006** | Medições duplicadas (mesmo fluxo e mesmo `timestamp`) são removidas, mantendo uma. |
 | **RN007** | Os períodos A e B começam em hora cheia UTC e **não se sobrepõem**. |
-| **RN008** | O log deve conter as **3 classes** (OK, RISCO e FALHA). Um dataset sem uma delas não serve para treinar nem para avaliar. |
+| **RN008** | O conjunto de medições deve conter as **3 classes** (OK, RISCO e FALHA). Um dataset sem uma delas não serve para treinar nem para avaliar. |
 
 ## 4. Regras do baseline
 
@@ -122,15 +122,28 @@ Cada medição é comparada com o baseline **do próprio fluxo**. As condições
 | **RN026** | Toda medição **simulada** (evento injetado pelo botão "simular evento") é marcada como **SIMULADA** e exibida de forma diferente da medição real. Medições simuladas **nunca** entram no treino, no baseline nem no histórico real. |
 | **RN027** | O sistema registra a **origem** de cada medição (REAL ou SIMULADA) e a **versão do modelo** usada em cada previsão. |
 
-## 8. Rastreabilidade
+## 8. Regras do monitoramento na rede local (aplicativo)
+
+Regras acrescentadas em 26/10 a partir do tutorial de Redes da Profa. Denise, que define o aplicativo de monitoramento por ICMP de hosts da rede local.
+
+| Código | Regra |
+|---|---|
+| **RN028** | O aplicativo envia ping **somente aos hosts cadastrados** (RF001). Cada verificação é um **ICMP Echo Request de 3 pacotes**, com tempo limite configurável. Um host que não responde gera uma medição com **perda de 100% e RTT vazio** (RN003), sem travar o monitoramento dos outros hosts. |
+| **RN029** | **Baseline do host local:** antes de prever, o aplicativo pinga o host até ter **pelo menos 30 RTT válidos** e calcula P95 e P99 do RTT e do jitter (equivalente local da RN010). Enquanto o baseline não está pronto, o painel mostra as métricas com o aviso "montando baseline", sem previsão. Não se usa o baseline de outro host (RN011). |
+| **RN030** | O aplicativo guarda o **histórico de cada medição** com as colunas do contrato (seção 3.1) – `ip` = IP do host, `latencia_ms` = RTT médio da verificação e `status_real` = classe da medição pela RN013 – e a classe prevista para a medição seguinte. Medições simuladas ficam marcadas e não entram no baseline (RN026). |
+| **RN031** | O intervalo entre pings é configurável (RF007). Como as janelas contam **medições** (3, 6 e 12) e não minutos, o tempo coberto por elas depende do intervalo escolhido; o intervalo usado nos testes é registrado junto com o histórico. |
+| **RN032** | **Testes obrigatórios** em três cenários: **normal**, **instável** (rede saturada ou latência alta) e **indisponível** (interface desligada ou host fora do ar). Em cada um, a classe prevista é comparada com a classe da medição seguinte (ocorrência real) e com o resultado do mesmo cenário no Cisco Packet Tracer. |
+
+## 9. Rastreabilidade
 
 | Regra | Requisitos funcionais | Casos de uso |
 |---|---|---|
 | RN001 a RN008 | RF002 Coletar dados de telemetria · RF003 Armazenar histórico | UC02, UC03 |
-| RN009 a RN012 | RF001 Cadastrar fluxos · RF007 Configurar parâmetros · RF008 Calcular baseline e rotular | UC01, UC07, UC08 |
+| RN009 a RN012 | RF001 Cadastrar fluxos e hosts · RF007 Configurar parâmetros · RF008 Calcular baseline e rotular | UC01, UC07, UC08 |
 | RN013 a RN015 | RF008 Calcular baseline e rotular | UC08 |
 | RN016 a RN023 | RF004 Executar algoritmo de predição | UC04 |
 | RN024 a RN025 | RF005 Visualizar alertas e histórico | UC05 |
 | RN026 a RN027 | RF006 Simular eventos de falha | UC06 |
+| RN028 a RN032 | RF001 Cadastrar fluxos e hosts · RF002 Coletar telemetria ICMP · RF003 Armazenar histórico · RF007 Configurar parâmetros · RF008 Calcular baseline | UC01, UC02, UC03, UC07, UC08 |
 
 Os requisitos e os casos de uso estão no documento UML de Análise de Sistemas (`analise_de_sistemas/`).
