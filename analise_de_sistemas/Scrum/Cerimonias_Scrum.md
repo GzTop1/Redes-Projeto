@@ -23,14 +23,14 @@ O Scrum tem quatro cerimônias em cada sprint:
 | Sprint 2 | 07/09 | Entregar o memorando e validar a ingestão | PB01, PB02 | — |
 | Sprint 3 | 21/09 | Coletar, fazer o baseline e rotular (Tarefas 1 e 2) | PB03 a PB07, PB20 | Isaac (T1), Davi (T2) |
 | Sprint 4 | 05/10 | Treinar, ajustar e testar o modelo (Tarefas 3 a 5); documentar o sistema | PB08 a PB10, PB12 | Fernanda (T3), Hendrick (T4), Geziel (T5) |
-| Sprint 5 | 19/10 | Incorporar o retorno da professora, fechar a documentação, integrar com Redes | PB11 a PB19 | Geziel (T5) |
-| Sprint 6 | 02/11 | Relatório, slides e ensaio | PB21 | _(definir)_ |
+| Sprint 5 | 19/10 | Incorporar o retorno das professoras, fechar a documentação e construir o aplicativo de monitoramento | PB11 a PB17 | Geziel (T5) |
+| Sprint 6 | 02/11 | Testes nos 3 cenários, Packet Tracer, vídeo de Redes (até 11/11), relatório, slides e ensaio | PB18, PB21 a PB23 | _(definir)_ |
 
 O **contrato** de cada Tarefa (seção "Contrato desta tarefa" dos diários) registra o que foi combinado em cada planning: o que **entra** (vindo da tarefa anterior), o que **sai** (para a próxima) e o que **não sai** dela.
 
 ## 2. Daily Scrum (assíncrona)
 
-**Formato:** a daily do grupo foi **assíncrona**. Cada integrante registrava o que fez **no próprio trabalho**: no histórico de revisões do Colab (versões nomeadas), nos commits do GitHub e no log `evidencias.jsonl`, que o notebook grava com data e hora a cada etapa concluída. O grupo de mensagens era usado para combinar o próximo passo e avisar impedimentos.
+**Formato:** a daily do grupo foi **assíncrona**. Cada integrante registrava o que fez **no próprio trabalho**: no histórico de revisões do Colab (versões nomeadas), nos commits do GitHub e no registro `evidencias.jsonl`, que o notebook grava com data e hora a cada etapa concluída. O grupo de mensagens era usado para combinar o próximo passo e avisar impedimentos.
 
 As três perguntas da daily, respondidas a partir dessas evidências:
 
@@ -57,6 +57,7 @@ As três perguntas da daily, respondidas a partir dessas evidências:
 | 14/10 | Fernanda | Criou a pasta de Análise de Sistemas com o documento UML; reorganizou o GitHub por matéria | Retorno da professora | — | commits de 14/10 |
 | 20/10 | Fernanda | Incorporou o notebook didático da professora (gráficos, árvore desenhada, árvore × Random Forest no teste); revisou Tarefas 1 a 5, RFC e UML | Atualizar o UML | — | `config/evidencias.jsonl` (20/10 15:19 UTC); commits de 20/10 |
 | 22/10 | Fernanda | Revisou o UML (diagramas `.puml` e imagens) | Documentos Scrum e regras de negócio | — | commits de 22/10 |
+| 26/10 | Isaac, Fernanda | Isaac refez a seção do diagrama de classes (relacionamentos e visibilidades) da Fase 2; Fernanda subiu os documentos de Scrum e, com o tutorial da Profa. Denise, reordenou o backlog e ajustou o UML e a pasta de Redes | Aplicativo com painel e Packet Tracer | Escopo de Redes mudou: entrega passa a ser um vídeo e o painel deixa de ser opcional | Documento da Fase 2; commits de 26/10; tutorial da Profa. Denise |
 
 **Impedimentos registrados e como foram resolvidos:**
 
@@ -68,6 +69,7 @@ As três perguntas da daily, respondidas a partir dessas evidências:
 | 11/10 | A primeira versão do pipeline (z-robusto, mediana/MAD, horizonte de 12 min) divergia do modelo da professora | Pipeline refeito com as correções C01 a C16 e teste de equivalência (123 de 123) |
 | 11/10 | Regras da API do RIPE Atlas: repetição em erro 404 e janelas desalinhadas | Repetição só em 429/5xx, cache de 24 h e períodos em hora cheia UTC (C05 e C06) |
 | 20/10 | Erro 400 da API ao rodar a Tarefa 1 de novo | A Tarefa 1 não precisa ser rodada de novo; o roteiro de execução parte da Tarefa 2 |
+| 26/10 | Tutorial de Redes mudou o escopo: aplicativo com dashboard obrigatório e entrega de Redes em vídeo até 11/11 | O PO reordenou o backlog no mesmo dia (PB14 a PB18, PB22 e PB23) e descartou o gerador sintético (PB19) |
 
 ## 3. Sprint Review
 
@@ -80,6 +82,7 @@ As três perguntas da daily, respondidas a partir dessas evidências:
 | Sprint 4 | 15/10 | Tarefa 3 – primeira árvore | Entregue com a grade e o desempate da professora (C12) |
 | Sprint 5 | 20/10 | Tarefas 3 e 4 no GitHub (revisão com a docente) | A professora enviou o notebook didático de árvore e Random Forest; o grupo acrescentou gráficos, árvore desenhada e comparação árvore × Random Forest no teste, sem mudar o modelo |
 | Sprint 5 | 29/10 | Tarefas 4 e 5 – modelo final e teste único | _(registrar o retorno após a entrega)_ |
+| Sprint 6 | 11/11 | Vídeo de Redes (Blackboard) | _(registrar após a entrega)_ |
 | Sprint 6 | 10 a 12/11 | Apresentação final | _(registrar após a apresentação)_ |
 
 ## 4. Sprint Retrospective
