@@ -2,7 +2,7 @@
 
 **Projeto:** Preditor de Falhas em Rede · Grupo 7
 **Product Owner:** Fernanda Akemi Martins Sanpei
-**Atualizado em:** 22/10/2026
+**Atualizado em:** 26/10/2026
 
 O **Sprint Backlog** é o pedaço do Product Backlog que o time escolhe fazer em uma sprint, na Sprint Planning. Os períodos seguem o cronograma da proposta do projeto. Os itens vêm das entregas registradas no GitHub (commits, diários das Tarefas e `config/evidencias.jsonl`). Os códigos **PBxx** são os itens do [Product Backlog](Product_Backlog.md).
 
@@ -75,34 +75,42 @@ O **Sprint Backlog** é o pedaço do Product Backlog que o time escolhe fazer em
 | Documento UML: requisitos, casos de uso e diagramas (13 e 14/10) | PB12 | Fernanda, Isaac | ✅ |
 | Reorganização do GitHub por matéria (14/10) | — | Fernanda | ✅ |
 | Definição do Product Owner (14/10) | — | Grupo (Fernanda) | ✅ |
-| `log_rede.csv` (previsto na proposta para esta sprint) | PB17 | — | ❓ |
-| Modo "simular evento" do painel (previsto na proposta) | PB16 | — | ❓ |
+| Modo "simular evento" do painel (previsto na proposta) | PB16 | — | ➡ Sprint 5 |
 
 **Incremento:** modelo final (Random Forest, F1 macro de 0,7675 no teste), Tarefas 2 e 3 entregues (11 e 15/10) e documento UML.
 
 ## Sprint 5 – Integração – 19 a 30/10/2026 (em andamento)
 
-**Meta:** incorporar o retorno da professora, fechar a documentação e integrar com Redes.
+**Meta:** incorporar o retorno das professoras, fechar a documentação e construir o aplicativo de monitoramento.
+
+> Em 26/10 a Profa. Denise enviou o tutorial de Redes: o resultado para CC é um **aplicativo com dashboard** (histórico, perdas, tempos e status OK/RISCO/FALHA), testado nos cenários **normal, instável e indisponível**, e a entrega de Redes é um **vídeo**. O PO reordenou o backlog no mesmo dia.
 
 | Item | História | Responsável | Situação |
 |---|---|---|---|
 | Gráficos, árvore desenhada e comparação árvore × Random Forest no teste, a partir do notebook didático da professora (20/10) | PB11 | Fernanda | ✅ |
 | Revisão das Tarefas 1 a 5 e do RFC (20/10) | — | Fernanda | ✅ |
-| Atualização do documento UML (20 e 22/10) | PB12 | Fernanda | ✅ |
-| Regras de negócio, Product Backlog, Sprint Backlogs e registro das cerimônias | PB13 | Fernanda (PO) | 🔄 |
+| Atualização do documento UML (20, 22 e 26/10), incluindo os relacionamentos e as visibilidades do diagrama de classes revisados pelo Isaac | PB12 | Fernanda, Isaac | ✅ |
+| Regras de negócio, Product Backlog, Sprint Backlogs e registro das cerimônias (26/10) | PB13 | Fernanda (PO) | ✅ |
+| Ajuste da documentação ao tutorial de Redes: backlog, UML (hosts locais e ping ICMP local) e pasta de Redes (26/10) | PB12, PB22, PB23 | Fernanda (PO) | ✅ |
 | Entrega das Tarefas 4 e 5 (29/10) | PB09, PB10 | Grupo | 🔄 |
-| Painel ao vivo, histórico e simulação | PB14 a PB16 | _a definir_ | ❓ |
-| `log_rede.csv` e cenários de falha | PB17, PB18 | _a definir_ | ❓ |
-| Gerador sintético e comparação sintético × real | PB19 | _a definir_ | ❓ |
+| Aplicativo com painel: ping a hosts locais, baseline do host, classificação ao vivo, histórico e alertas | PB14, PB15 | _a definir_ | ⏳ |
+| Botão de simulação de falha (medição marcada como SIMULADA) | PB16 | _a definir_ | ⏳ |
+| Histórico das medições no aplicativo (horário, host, métricas, classe atual e prevista) | PB17 | _a definir_ | ⏳ |
+| Gerador sintético e comparação sintético × real | PB19 | — | ❌ não será feito |
 
-## Sprint 6 – Preparação final – 02 a 09/11/2026 (planejada)
+## Sprint 6 – Redes e preparação final – 02 a 11/11/2026 (planejada)
 
-**Meta:** consolidar e ensaiar a apresentação.
+**Meta:** testar o aplicativo nos três cenários, montar a rede no Packet Tracer, gravar e entregar o vídeo de Redes e preparar a apresentação.
 
 | Item | História | Responsável | Situação |
 |---|---|---|---|
-| Relatório consolidado | PB21 | _a definir_ | ⏳ |
-| Slides | PB21 | _a definir_ | ⏳ |
+| Testes nos cenários normal, instável (rede saturada, RTT alto) e indisponível (interface desligada), com a previsão × a ocorrência real registradas | PB18 | Todos | ⏳ |
+| Rede local no Packet Tracer: topologia TCP/IP, protocolos por camada, ping entre os hosts e enlace derrubado | PB22 | _a definir_ | ⏳ |
+| Coleta dos RGMs de todos para a capa do vídeo | PB23 | Fernanda | ⏳ |
+| Roteiro do vídeo (introdução, objetivo, desenvolvimento, encerramento) | PB23 | _a definir_ | ⏳ |
+| Gravação e edição (apresentador no canto da tela, 10 a 15 min), upload no YouTube como não listado — **meta: 08/11** | PB23 | Todos | ⏳ |
+| **Entrega do link pelo Blackboard até 11/11/2026** (até 3 tentativas; vale a última) | PB23 | Fernanda (PO) | ⏳ |
+| Relatório consolidado e slides | PB21 | _a definir_ | ⏳ |
 | Ensaio da apresentação (testar o painel ao vivo) | PB21 | Todos | ⏳ |
 
-**Apresentação:** 10 a 12/11/2026.
+**Apresentação:** 10 a 12/11/2026 · **Vídeo de Redes:** até 11/11/2026.
