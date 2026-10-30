@@ -12,6 +12,7 @@ import random
 import time
 from collections import deque
 from datetime import datetime
+from pathlib import Path
 
 import pandas as pd
 import streamlit as st
@@ -24,13 +25,15 @@ ICONE = {"OK": "🟢", "RISCO": "🟡", "FALHA": "🔴"}
 MODO_SIM = "Simulado (baseline RIPE Atlas)"
 MODO_REAL = "Ping real (baseline provisório)"
 
+PASTA = Path(__file__).parent  # os arquivos ficam na mesma pasta do dashboard.py, em qualquer lugar
+
 st.set_page_config(page_title="Preditor de Falhas", page_icon="📡", layout="wide")
 
 
 @st.cache_resource
 def carregar():
-    modelo, feats = carregar_modelo("modelo.joblib")
-    return modelo, feats, carregar_baseline("baseline.csv")
+    modelo, feats = carregar_modelo(str(PASTA / "modelo.joblib"))
+    return modelo, feats, carregar_baseline(str(PASTA / "baseline.csv"))
 
 
 modelo, feats, baseline = carregar()
