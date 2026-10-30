@@ -8,7 +8,7 @@ Centro Universitário Braz Cubas · Ciência da Computação · 4º semestre · 
 
 | Item | Link |
 |---|---|
-| Página do projeto (artigo) |  https://akemiizinh4.github.io/Site_PreditorDeFalhas/ |
+| Página do projeto (artigo) | [akemiizinh4.github.io/Site_PreditorDeFalhas](https://akemiizinh4.github.io/Site_PreditorDeFalhas/) |
 | Vídeo pitch (90 s) | _a publicar_ |
 
 ## O problema
