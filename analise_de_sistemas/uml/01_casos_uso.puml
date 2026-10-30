@@ -26,8 +26,9 @@ left to right direction
 actor "Administrador\nde Rede" as ADM
 actor "Analista de TI" as ANA
 actor "API RIPE Atlas\n<<sistema externo>>" as API
+actor "Host da rede local\n<<dispositivo>>" as HOST
 rectangle "Sistema Preditor de Falhas" {
-  usecase "UC01 – Cadastrar\nfluxos monitorados" as UC01
+  usecase "UC01 – Cadastrar fluxos\ne hosts monitorados" as UC01
   usecase "UC07 – Configurar\nparâmetros de medição" as UC07
   usecase "UC05 – Visualizar\nalertas e histórico" as UC05
   usecase "UC06 – Simular\neventos de falha" as UC06
@@ -41,6 +42,7 @@ ADM --> UC07
 ANA --> UC05
 ANA --> UC06
 UC02 <-- API
+UC02 <-- HOST
 UC06 .> UC05 : <<extend>>
 UC05 ..> UC04 : <<include>>
 UC06 ..> UC04 : <<include>>
