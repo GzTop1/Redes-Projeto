@@ -24,18 +24,18 @@ skinparam NoteBorderColor #AAAAAA
 skinparam PackageBorderColor #555555
 |Analista de TI|
 start
-:Selecionar fluxo no painel;
+:Selecionar host no painel;
 |Sistema|
-:Carregar baseline do fluxo;
-if (Baseline válido?\n(≥ 30 RTT no Período A)) then (não)
-  :Informar "fluxo sem baseline";
-  stop
+:Carregar baseline do host;
+if (Baseline válido?\n(≥ 30 RTT)) then (não)
+  :Pingar o host por alguns minutos\ne calcular P95/P99 (baseline);
 else (sim)
 endif
 repeat
-  :Aguardar próxima medição (240 s);
-  |API RIPE Atlas|
-  :Publicar resultado do ping\n(3 pacotes);
+  :Aguardar o intervalo configurado;
+  :Enviar ICMP Echo Request\n(3 pacotes);
+  |Host da rede local|
+  :Responder com ICMP Echo Reply\n(ou não responder);
   |Sistema|
   if (Houve resposta?) then (não)
     :Registrar RTT ausente\n(perda = 100%, RTT vazio);
